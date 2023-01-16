@@ -1,0 +1,14 @@
++. Can query historical data 
++. Can receive data with historical data update callback
++. Can store data in a dict
++. Can store two copies of data
++. Can compare values within those copies
++. Can update values within those copies
+-. Can write updated values to file
++. Can check updated values every 5 minutes
+-. Can query multiple contracts in a for loop
+-. Can query twice same contract with same id bu different end time
+    + Received two historicalDataEnd messages for two very same ID's
+-. Can store all information under unique key:value pairs
+
+
