@@ -8,7 +8,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
-from twap_order import pair 
+from custom_contracts import prsh_cnt, aapl_contract
 
 class TestApp(EWrapper, EClient):
 
@@ -34,11 +34,25 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
+    def contractDetails(self, reqId, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        print(contractDetails)
+
+    def contractDetailsEnd(self, reqId):
+        super().contractDetailsEnd(reqId)
+        print("Contract details end for: ", reqId)
+
+    def marketRule(self, marketRuleId, priceIncrements):
+        super().marketRule(marketRuleId, priceIncrements)
+        print("Market rule ID: ", marketRuleId)
+        print("DICKS")
+        for priceIncrement in priceIncrements:
+            print("Price Increment: ", priceIncrement)
+
     def start(self):
-        contract = pair['contract']
-        order = pair['order']
-        self.placeOrder(self.nextValidOrderId, contract, order)
         print(self.serverVersion())
+        self.reqContractDetails(self.nextValidOrderId, prsh_cnt)
+        self.reqMarketRule(1872)
 
     def stop(self):
         self.done = True
@@ -47,7 +61,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.1.127', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         Timer(15, app.stop).start()

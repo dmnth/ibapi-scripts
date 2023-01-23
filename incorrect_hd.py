@@ -8,7 +8,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
-from twap_order import pair 
+from custom_contracts import TestContracts
 
 class TestApp(EWrapper, EClient):
 
@@ -34,11 +34,34 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
+    def historicalData(self, reqId, bar):
+        if bar.date == "20230112 13:00:00 US/Central":
+            print(bar.date, bar.close)
+        if bar.date == "20230112 13:00:00 MET":
+            print(bar.date, bar.close)
+        if bar.date == "20230112 13:00:00 US/Eastern":
+            print(bar.date, bar.close)
+
+    def headTimestamp(self, reqId, headTimeStamp):
+        print("HeadTimeStamp: ", headTimeStamp)
+
+
+    def compareDates(self, dateString1, dateString2):
+        return
+
+
     def start(self):
-        contract = pair['contract']
-        order = pair['order']
-        self.placeOrder(self.nextValidOrderId, contract, order)
         print(self.serverVersion())
+        contract = TestContracts.create_mes_contract() 
+#        contract = TestContracts.porsche_contract()
+#        contract = TestContracts.create_single_US_contract("AAPL")
+#        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", 0, 1)
+        end_date = "20230113 13:00:00 US/Central"
+        self.reqHistoricalData(self.nextValidOrderId, contract, end_date, "1 W",
+                "15 mins", "MIDPOINT", 1, 1, False, [])
+#        self.nextValidOrderId += 1
+#         self.reqHistoricalData(self.nextValidOrderId, contract, "", "1 W",
+#                "1 hour", "TRADES", 1, 1, False, [])
 
     def stop(self):
         self.done = True
@@ -47,7 +70,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.1.127', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         Timer(15, app.stop).start()

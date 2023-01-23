@@ -2,54 +2,79 @@
 
 from ibapi.contract import Contract
 
-def create_single_US_contract(symbol):
+class TestContracts():
 
-    contract = Contract()
+    def __init__(self):
+        self.param = None
 
-    contract.symbol = symbol
-    contract.exchange = "SMART"
-    contract.currency = "USD"
-    contract.secType = "STK"
+    def create_single_US_contract(symbol):
 
-    return contract
+        contract = Contract()
 
-def create_INR_contract(symbol):
+        contract.symbol = symbol
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+        contract.secType = "STK"
 
-    contract = Contract()
-    contract.symbol = symbol
-    contract.exchange = "NSE"
-    contract.currency = "INR"
-    contract.secType = "STK"
+        return contract
 
-    return contract
+    def create_INR_contract(symbol):
 
-def create_list_of_contracts(symbols, function):
+        contract = Contract()
+        contract.symbol = symbol
+        contract.exchange = "NSE"
+        contract.currency = "INR"
+        contract.secType = "STK"
 
-    contract_list = []
+        return contract
 
-    for s in symbols:
-        new_contract = function(s)
-        contract_list.append(new_contract)
+    def create_list_of_contracts(symbols, function):
 
-    return contract_list
+        contract_list = []
 
-def invalid_mutiplier_fut():
+        for s in symbols:
+            new_contract = function(s)
+            contract_list.append(new_contract)
 
-    contract = Contract()
-#    contract.conId = 606451203
-    contract.tradingClass = "TCH"
-    contract.symbol = "TCHF3"
-    contract.secType = "FUT"
-    contract.exchange = "HKFE"
-    contract.currency = "HKD"
-    contract.lastTradeDateOrContractMonth = "20230130"
-    # Multiplier should be set same as in TWS, integer type
-    contract.multiplier = 100 
+        return contract_list
 
-    return contract
+    def invalid_mutiplier_fut():
 
+        contract = Contract()
+    #    contract.conId = 606451203
+        contract.tradingClass = "TCH"
+        contract.symbol = "TCHF3"
+        contract.secType = "FUT"
+        contract.exchange = "HKFE"
+        contract.currency = "HKD"
+        contract.lastTradeDateOrContractMonth = "20230130"
+        # Multiplier should be set same as in TWS, integer type
+        contract.multiplier = 100 
 
-symbols = ['BIRLACORP', 'ABCAPITAL']
-contracts = create_list_of_contracts(symbols, create_INR_contract)
-aapl_contract = create_single_US_contract("AAPL")
-invalid_contract = invalid_mutiplier_fut()
+        return contract
+
+    def porsche_contract():
+
+       contract = Contract()
+       contract.secType = "STK"
+       contract.exchange = "SMART"
+       contract.currency = "EUR"
+       contract.symbol = "P911"
+
+       return contract
+
+    def create_mes_contract():
+
+       contract = Contract()
+       contract.secType = "FUT"
+       contract.conId = 533620623
+       contract.symbol = "MES"
+       contract.lastTradeDateOrContractMonth = "20230317"
+       contract.multiplier = 5
+       contract.exchange = "CME"
+       contract.currency = "USD"
+       contract.localSymbol = "MESH3"
+       contract.tradingClass = "MES"
+
+       return contract
+
