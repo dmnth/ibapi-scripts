@@ -78,3 +78,75 @@ class TestContracts():
 
        return contract
 
+    def create_futures_contracts():
+        # Three sample contracts from 
+        # beggining, end and middle of the list
+
+       contract = Contract()
+
+       contract.symbol = "GC"
+       contract.secType = "FUT"
+       contract.exchange = "COMEX"
+       contract.currency = "USD"
+       contract.lastTradeDateOrContractMonth = "202302"
+
+       contract1 = Contract()
+
+       contract1.symbol = "6B"
+       contract1.secType = "FUT"
+       contract1.exchange = "CME"
+       contract1.currency = "USD"
+       contract1.lastTradeDateOrContractMonth = "202303"
+
+       contract2 = Contract()
+
+       contract2.symbol = "HO"
+       contract2.secType = "FUT"
+       contract2.exchange = "NYMEX"
+       contract2.currency = "USD"
+       contract2.lastTradeDateOrContractMonth = "202303"
+
+       return [contract, contract1, contract2]
+
+    def create_NYMEX_mar_fut_cont(symbol):
+
+       contract2 = Contract()
+
+       contract2.symbol = symbol 
+       contract2.secType = "FUT"
+       contract2.exchange = "NYMEX"
+       contract2.currency = "USD"
+       contract2.lastTradeDateOrContractMonth = "202303"
+        
+       return contract2
+        
+    def create_mult_NYMEX(list_of_symbols):
+        cont_list = []
+        for symb in list_of_symbols:
+            cont = TestContracts.create_NYMEX_mar_fut_cont(symb)
+            cont_list.append(cont)
+
+        return cont_list
+
+    def create_CBOT_mar_cont(symbol):
+
+       contract2 = Contract()
+
+       contract2.symbol = symbol 
+       contract2.secType = "FUT"
+       contract2.exchange = "CBOT"
+       contract2.currency = "USD"
+       contract2.lastTradeDateOrContractMonth = "202303"
+        
+       return contract2
+        
+    def create_contract_list(list_of_symbols, exchange):
+        cont_list = []
+        for symb in list_of_symbols:
+            if exchange == "CBOT":
+                cont = TestContracts.create_CBOT_mar_cont(symb)
+            if exchange == "NYMEX":
+                cont = TestContracts.create_NYMEX_mar_fut_cont(symb)
+            cont_list.append(cont)
+
+        return cont_list
