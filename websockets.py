@@ -63,6 +63,7 @@ def place_simple_order():
         }
         ]
     }
+    # This will not work obviously, throws a 403 - not authorized
     str_params = "{ 'orders': [{'acctId': 'DU6036902', 'conid': 265598, 'secType': 'secType = 265598:STK', " \
              "'orderType': 'LMT', 'listingExchange': 'SMART', 'outsideRTH': True, 'price': 1, " \
              "'auxPrice': 0, 'side': 'BUY', 'ticker': 'AAPL', 'tif': 'DAY', 'quantity': 12}]}"
