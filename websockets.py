@@ -9,7 +9,7 @@ import requests
 
 ssl_context = ssl._create_unverified_context()
 
-session = json.dumps({"session": "0e7b15af81d6bc0345d79bcc8212bd26"})
+session = json.dumps({"session": sid})
 
 "smh+265598+{'exchange': 'ISLAND', 'period': '2h', 'bar': '5 min'"
 
