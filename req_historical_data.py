@@ -18,7 +18,7 @@ class TestApp(EWrapper, EClient):
     # WRAPPERS HERE
 
     def error(self, reqId: int, errorCode: int, errorString: str,
-            advansedOrderreject):
+            advansedOrderreject=''):
         super().error(reqId, errorCode, errorString, advansedOrderreject)
         error_message = f'Error id: {reqId}, Error code: {errorCode}, ' \
                         + f'Msg: {errorString}'
@@ -26,6 +26,10 @@ class TestApp(EWrapper, EClient):
     def historicalData(self, reqId, bar):
         super().historicalData(reqId, bar)
         print("Historical data: ", reqId, bar)
+    
+    def contractDetails(self, reqId, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        print("contract details: ", reqId, contractDetails)
 
     # Provides next valid identifier needed to place an order
     # Indicates that the connection has been established and other messages can be sent from
@@ -39,8 +43,16 @@ class TestApp(EWrapper, EClient):
 
     def start(self):
         querytime = "20230127 15:00:00 US/Eastern"
-        self.reqHistoricalData(self.nextValidOrderId, querytime, 
-                '1 D', '1 min', 'TRADES', 1, 1, False, [])
+        contract = Contract()
+        contract.symbol = 'AAPL'
+        contract.exchange = 'SMART'
+        contract.currency = 'USD'
+        contract.secType = "STK"
+
+        self.reqContractDetails(self.nextValidOrderId, contract)
+        endDate = '20230130 19:59:00 US/Eastern'
+        self.reqHistoricalData(self.nextValidOrderId, contract, endDate,
+                '1 D', '1 min', 'TRADES', 0, 1, False, [])
         print(self.serverVersion())
 
     def stop(self):
@@ -50,10 +62,10 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.1.127', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
-        Timer(15, app.stop).start()
+#        Timer(5, app.stop).start()
         app.run()
     except Exception as err:
         print(err)
