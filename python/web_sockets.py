@@ -22,8 +22,6 @@ def get_sid():
         res = json.loads(resp_content)
         print(res['session'])
         session_id = resp_content.split(':')[1].split(',')[0].strip('"')
-        print(session)
-
         session = json.dumps({'session': res['session']})
         data = "smd+265598+" + json.dumps({'fields':['31', '83']})
         message_dict = {
@@ -89,9 +87,6 @@ def get_accounts_id():
 def create_SMD_req(conId, args):
     msg = "smd+" + conId + '+' + json.dumps({'fields': args})
     return [msg]
-
-def session_msg():
-    sis = get_
 
 def create_SBD_req(conId, exchange):
     account_list = get_accounts_id()
