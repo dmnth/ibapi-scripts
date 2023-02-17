@@ -9,19 +9,22 @@ import websockets
 
 ssl_context = ssl._create_unverified_context()
 
-sid = "2caff548b2f960cec4edbc3323d33784"
-
 # session = json.dumps({"session": sid})
+# Check if CORS are enabled in http headers
 
 "smh+265598+{'exchange': 'ISLAND', 'period': '2h', 'bar': '5 min'"
 
+base_url = "https://127.0.0.1:5000/v1/api"
+local_ip = "127.0.0.1:5000"
+
 def get_sid():
-    resp = requests.get("https://192.168.1.127:5000/v1/api/tickle", verify=False)
+    resp = requests.get(base_url + "/tickle", verify=False)
     if resp:
         resp_content = resp.content.decode()
         res = json.loads(resp_content)
         print(res['session'])
         session_id = resp_content.split(':')[1].split(',')[0].strip('"')
+
         session = json.dumps({'session': res['session']})
         data = "smd+265598+" + json.dumps({'fields':['31', '83']})
         message_dict = {
@@ -33,7 +36,7 @@ def get_sid():
 # subscribe_mkt_dpth = f"sbd+{acctid}+{conId}+{exchange}"
 
 def authorize():
-    resp = requests.get("https://192.168.1.127:5000/v1/api/iserver/auth/status", verify=False)
+    resp = requests.get(base_url + "/iserver/auth/status", verify=False)
     print(resp.text)
 
 def get_snapshot_data():
@@ -76,13 +79,20 @@ def place_simple_order():
     print(resp.text)
 
 def get_accounts_id():
-    rsp = requests.get('https://192.168.1.127:5000/v1/api/portfolio/accounts', verify=False)
+    rsp = requests.get(base_url + '/portfolio/accounts', verify=False)
     content = json.loads(rsp.content)
     id_list = []
     for id in range(len(content)):
         account_id = content[id]['id']
         id_list.append(account_id)
     return id_list
+
+def reauthenticate_session():
+    rsp = requests.get(base_url + '/iserver/reauthenticate', verify=False)
+    if rsp.status_code != 200:
+        print(rsp.status_code, "-> Wonder if something is wrong")
+    else:
+        return rsp.content
 
 def create_SMD_req(conId, args):
     msg = "smd+" + conId + '+' + json.dumps({'fields': args})
@@ -91,7 +101,7 @@ def create_SMD_req(conId, args):
 def create_SBD_req(conId, exchange):
     account_list = get_accounts_id()
     msg = f"sbd+{account_list[0]}+{conId}+{exchange}"
-    return [msg]
+    return msg
 
 def create_MDD_req(conID, exchange):
     accID_list = get_accounts_id()
@@ -105,42 +115,45 @@ def get_subAccounts_list():
     # Should be called before any other account operations
     rsp = requests.get('https://localhost:5000/v1/api/portfolio/accounts')
 
-def non_async_function(mdd_requests):
-    with websockets.connect("wss://192.168.1.127:5000/v1/api/ws", ssl=ssl_context) as socket:
-        res = socket.recv()
-        if res:
-            print("result: ", res)
+async def non_async_function(mdd_requests):
+    async  with websockets.connect("wss://127.0.0.1:5000/v1/api/ws", ssl=ssl_context) as socket:
+        await socket.send('{session: "0845803408530485038"}')
+        res = await socket.recv()
+        print(res)
         while True:
-            asyncio.sleep(1)
             for message in mdd_requests:
                 print(message)
-                socket.send('{session: "0845803408530485038"}')
-                socket.send(message)
-            res = socket.recv()
-            print(res)
-            result_dict = json.loads(res.decode())
-            print(result_dict)
-            if len(res) != 0 and 'data' in result_dict.keys():
-                for el in result_dict['data']:
-                    print(el)
-                    if 'ask' in el.keys() or 'bid' in el.keys():
-                        print(el)
-                        return
-
-
+                await asyncio.sleep(1)
+                await socket.send(message)
+                result_dict = json.loads(res.decode())
+                print(result_dict)
 
 async def market_data_requests(mdd_requests):
-    async with websockets.connect("wss://192.168.1.127:5000/v1/api/ws", ssl=ssl_context) as websocket:
-        print(mdd_requests)
+    async with websockets.connect("wss://" + local_ip + "/v1/api/ws", ssl=ssl_context) as websocket:
+        await websocket.send('{session: "0845803408530485038"}')
+        res = await websocket.recv()
+        print(res)
         while True:
-            await asyncio.sleep(1)
-            await websocket.send(mdd_requests)
-            res = await websocket.recv()
-            result_dict = json.loads(res.decode())
-            print(result_dict)
+            for el in mdd_requests:
+                await asyncio.sleep(1)
+                await websocket.send(mdd_requests)
+                res = await websocket.recv()
+                result_dict = json.loads(res.decode())
+                if 'error' in result_dict.keys():
+
+                    if result_dict['error'] == 'not authenticated':
+                        print("PLEASE REAUTHENTICATE BLYAT")
+                        msg = reauthenticate_session().decode()
+                        if len(msg) != 0 and msg['message'] == 'triggered':
+                            print("Reauthenticated succesfully")
+                        else:
+                            print("Reauth did not succeed")
+                else:
+                    if 'data' in result_dict.keys():
+                        print("----> ", result_dict['data'][0])
 
 async def send_session_id(payload):
-    async with websockets.connect("wss://192.168.1.127:5000/v1/api/ws", ssl=ssl_context) as websocket:
+    async with websockets.connect("wss://" + local_ip + "/v1/api/ws", ssl=ssl_context) as websocket:
         res = await websocket.recv()
         if res:
             print("result: ", res)
@@ -164,7 +177,10 @@ if __name__ == "__main__":
    # mdd_requests = create_MDD_req(265598, "ARCA")
    # payload = json.dumps({'sssion': 'fa75c071746dbfbda1e9fbdca7f03fab'})
     smd_req = create_SMD_req('265598', ['31', '83', '84', '85', '86'])
+    sbd_req1 = create_SBD_req("265598", "SMART")
+    sbd_req2 = create_SBD_req("3691937", "SMART")
 #    smd_req = 'smd+265598+{"fields":["31"]}'
 #  sbd_req = create_SBD_req(70248730, 'EBS')
-    asyncio.get_event_loop().run_until_complete(market_data_requests(smd_req))
+    asyncio.get_event_loop().run_until_complete(market_data_requests([sbd_req1, sbd_req2]))
+#    asyncio.get_event_loop().run_until_complete(non_async_function([sbd_req1, sbd_req2]))
 
