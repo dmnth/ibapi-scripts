@@ -9,6 +9,16 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 
+def forex_pair():
+
+    contract = Contract()
+    contract.symbol = "EUR"
+    contract.exchange = "IDEALPRO"
+    contract.secType = "CASH"
+    contract.currency = "USD"
+
+    return contract
+
 class TestApp(EWrapper, EClient):
 
     def __init__(self):
@@ -25,7 +35,7 @@ class TestApp(EWrapper, EClient):
 
     def historicalData(self, reqId, bar):
         super().historicalData(reqId, bar)
-        print("Historical data: ", reqId, type(bar.))
+        print("Historical data: ", reqId, bar)
     
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
@@ -49,10 +59,12 @@ class TestApp(EWrapper, EClient):
         contract.currency = 'EUR'
         contract.secType = "STK"
 
+        contract = forex_pair()
+
         self.reqContractDetails(self.nextValidOrderId, contract)
         endDate = '20230130 19:59:00'
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate,
-                '1 D', '1 min', 'TRADES', 0, 1, False, [])
+                '1 W', '1 min', 'BID', 1, 1, False, [])
         print(self.serverVersion())
 
     def stop(self):
@@ -62,7 +74,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.127', 7496, clientId=0)
+        app.connect('192.168.1.167', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(5, app.stop).start()
