@@ -9,15 +9,42 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 
-def forex_pair():
+class CustomContracts():
 
-    contract = Contract()
-    contract.symbol = "EUR"
-    contract.exchange = "IDEALPRO"
-    contract.secType = "CASH"
-    contract.currency = "USD"
+    def __init__(self):
+        self.args = ""
 
-    return contract
+    def forex_pair(self):
+
+        contract = Contract()
+        contract.symbol = "EUR"
+        contract.exchange = "IDEALPRO"
+        contract.secType = "CASH"
+        contract.currency = "USD"
+
+        return contract
+
+    def bmw_contract(self):
+
+        contract = Contract()
+        contract.symbol = 'BMW'
+        contract.exchange = 'SMART'
+        contract.currency = 'EUR'
+        contract.secType = "STK"
+        
+        return contract
+
+    def ndx_nasdaq_contract(self):
+
+        contract = Contract()
+        contract.symbol = "NDX"
+        contract.secType = "STK"
+        contract.exchange = "VALUE"
+        contract.currency = "CAD"
+
+        return contract
+
+contracts = CustomContracts()
 
 class TestApp(EWrapper, EClient):
 
@@ -53,13 +80,8 @@ class TestApp(EWrapper, EClient):
 
     def start(self):
         querytime = "20230127 15:00:00 US/Eastern"
-        contract = Contract()
-        contract.symbol = 'BMW'
-        contract.exchange = 'SMART'
-        contract.currency = 'EUR'
-        contract.secType = "STK"
 
-        contract = forex_pair()
+        contract = contracts.ndx_nasdaq_contract()
 
         self.reqContractDetails(self.nextValidOrderId, contract)
         endDate = '20230130 19:59:00'

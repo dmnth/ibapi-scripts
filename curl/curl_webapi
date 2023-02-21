@@ -1,4 +1,4 @@
 
-# Bypass certificate verification
+# Skip certificate verification
 
 curl -v --insecure https://localhost:5000/v1/api/tickle
