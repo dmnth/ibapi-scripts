@@ -44,6 +44,27 @@ class CustomContracts():
 
         return contract
 
+    def ndx_idx_nasdaq(self):
+
+        contract = Contract()
+        contract.symbol = "NDX"
+        contract.secType = "IND"
+        contract.exchange = "NASDAQ"
+        contract.currency = "USD"
+
+        return contract
+
+    def cnh_contract(self):
+        contract = Contract()
+        contract.symbol = "CNH"
+        contract.lastTradeDateOrContractMonth = "20230416"
+        contract.secType = "FUT"
+        contract.multiplier = 100000
+        contract.exchange = "CME"
+        contract.currency = "CNH"
+        contract.localSymbol = "CNHJ3"
+        return contract
+
 contracts = CustomContracts()
 
 class TestApp(EWrapper, EClient):
@@ -84,9 +105,10 @@ class TestApp(EWrapper, EClient):
         contract = contracts.ndx_nasdaq_contract()
 
         self.reqContractDetails(self.nextValidOrderId, contract)
-        endDate = '20230130 19:59:00'
+#        endDate = '20230416 19:59:00'
+        endDate = ""
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate,
-                '1 W', '1 min', 'BID', 1, 1, False, [])
+                '7 D', '5 mins', 'TRADES', 0, 1, True, [])
         print(self.serverVersion())
 
     def stop(self):

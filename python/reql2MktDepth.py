@@ -72,9 +72,9 @@ contract.secType = "STK"
 
 symbol = "AAPL"
 
-app.connect('192.168.1.167', 7496, clientId=0)
-print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
-print(f'ibapi version: ', ibapi.__version__)
+app.connect('192.168.1.167', 4000, clientId=0)
+#print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
+#print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
 app.run()
 

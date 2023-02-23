@@ -15,7 +15,7 @@ ssl_context = ssl._create_unverified_context()
 "smh+265598+{'exchange': 'ISLAND', 'period': '2h', 'bar': '5 min'"
 
 base_url = "https://127.0.0.1:5000/v1/api"
-local_ip = "127.0.0.1:5000"
+local_ip = "192.168.1.167:5000"
 
 def get_sid():
     resp = requests.get(base_url + "/tickle", verify=False)
@@ -46,6 +46,36 @@ def get_snapshot_data():
                         params=params)
     print(resp.url)
 
+    print(resp.text)
+
+def whatif():
+    url = \
+    "https://"+ local_ip +"/v1/api/iserver/account/DU6036902/orders/whatif"
+    params = { 'orders': [
+        {
+        'acctId': 'DU6036902',
+        'conid': 265598,
+        'secType': 'secType = 265598:STK',
+        'orderType': 'LMT',
+        'listingExchange': 'SMART',
+        'outsideRTH': True,
+        'price': 1,
+        'auxPrice': 0,
+        'side': 'BUY',
+        'ticker': 'AAPL',
+        'tif': 'DAY',
+        'quantity': 12
+        }
+        ]
+    }
+    # This will not work obviously, throws a 403 - not authorized
+    str_params = "{ 'orders': [{'acctId': 'DU6036902', 'conid': 265598, 'secType': 'secType = 265598:STK', " \
+             "'orderType': 'LMT', 'listingExchange': 'SMART', 'outsideRTH': True, 'price': 1, " \
+             "'auxPrice': 0, 'side': 'BUY', 'ticker': 'AAPL', 'tif': 'DAY', 'quantity': 12}]}"
+    json_params = json.dumps(str_params)
+    print(json_params)
+    payload = {"accountId": "DU6036902", "body": params}
+    resp = requests.post(url, verify=False, data=json_params)
     print(resp.text)
 
 def place_simple_order():
@@ -171,9 +201,7 @@ async def send_session_id(payload):
                     print(el)
                     return
 
-
-
-if __name__ == "__main__":
+def streaming_data_operations():
    # mdd_requests = create_MDD_req(265598, "ARCA")
    # payload = json.dumps({'sssion': 'fa75c071746dbfbda1e9fbdca7f03fab'})
     smd_req = create_SMD_req('265598', ['31', '83', '84', '85', '86'])
@@ -183,4 +211,8 @@ if __name__ == "__main__":
 #  sbd_req = create_SBD_req(70248730, 'EBS')
     asyncio.get_event_loop().run_until_complete(market_data_requests([sbd_req1, sbd_req2]))
 #    asyncio.get_event_loop().run_until_complete(non_async_function([sbd_req1, sbd_req2]))
+
+
+if __name__ == "__main__":
+    whatif()
 
