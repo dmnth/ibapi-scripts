@@ -8,6 +8,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
+from datetime import datetime
 
 class CustomContracts():
 
@@ -65,6 +66,48 @@ class CustomContracts():
         contract.localSymbol = "CNHJ3"
         return contract
 
+    def spy_contract(self):
+        contract = Contract()
+        contract.symbol = "SPY"
+        contract.secType = "OPT"
+        contract.exchange = "SMART"
+        contract.lastTradeDateOrContractMonth = "20230818"
+        contract.right = "CALL"
+        contract.strike = "330"
+        return contract
+
+    def idx_contract(self):
+        contract = Contract()
+        contract.symbol = "SPX"
+        contract.exchange = "CBOE"
+        contract.currency = "USD"
+        contract.secType = "IND"
+
+        return contract
+
+    def options_contract(self):
+        contract = Contract()
+        contract.symbol = "SPY"
+        contract.secType = "OPT"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+        contract.right = "P"
+        contract.strike = 396
+        contract.lastTradeDateOrContractMonth = "202303"
+        return contract
+
+    def tsla_contract(self):
+
+        contract = Contract()
+
+        contract.symbol = "TSLA"
+        contract.secType = "STK"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        return contract
+
+
 contracts = CustomContracts()
 
 class TestApp(EWrapper, EClient):
@@ -99,17 +142,42 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
+    def headTimestamp(self, reqId, headTimeStamp):
+        print("HeadTimeStamp: ", headTimeStamp)
+
+    def convert_unix_timestamp(self, stamp):
+        print(stamp)
+        ts = int(stamp)
+        print(datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S"))
+        
+    def historicalTicksBidAsk(self, reqId: int, ticks,
+                              done: bool):
+        for tick in ticks:
+            self.convert_unix_timestamp(tick.time)
+            print("HistoricalTickBidAsk. ReqId:", reqId, tick)
+
+    def historicalTicksLast(self, reqId: int, ticks,
+                            done: bool):
+        for tick in ticks:
+            self.convert_unix_timestamp(tick.time)
+            print("HistoricalTickLast. ReqId:", reqId, tick)
+
     def start(self):
         querytime = "20230127 15:00:00 US/Eastern"
 
-        contract = contracts.ndx_nasdaq_contract()
+        contract = contracts.tsla_contract()
 
         self.reqContractDetails(self.nextValidOrderId, contract)
-#        endDate = '20230416 19:59:00'
-        endDate = ""
-        self.reqHistoricalData(self.nextValidOrderId, contract, endDate,
-                '7 D', '5 mins', 'TRADES', 0, 1, True, [])
-        print(self.serverVersion())
+        startDate = "20230308 10:30:00 US/Eastern"
+        endDate = '20230308 16:30:00 US/Eastern'
+        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
+                1)
+
+        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, endDate,
+                10, "TRADES", 1, True, [])
+#        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
+#                '1 D', '5 secs', 'TRADES', 0, 1, False, [])
+#        print(self.serverVersion())
 
     def stop(self):
         self.done = True

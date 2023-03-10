@@ -10,7 +10,6 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
-from accumulate_distribute import pair
 
 class TestApp(EWrapper, EClient):
 
@@ -36,18 +35,9 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
-
-    def contractDetails(self, reqId: int, contractDetails):
-        super().contractDetails(reqId, contractDetails)
-        print(contractDetails)
-
-
     def start(self):
-        order = pair['order']
-        contract = pair['contract']
         self.reqContractDetails(self.nextValidOrderId, contract)
         self.placeOrder(self.nextValidOrderId, contract, order)
-#        self.reqAllOpenOrders()
 
     def stop(self):
         self.done = True
@@ -56,7 +46,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.127', 7496, clientId=0)
+        app.connect('192.168.1.167', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()

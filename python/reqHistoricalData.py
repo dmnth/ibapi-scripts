@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import logging
 import datetime
 import threading
@@ -47,10 +49,10 @@ class TestApp(EWrapper, EClient):
     def start(self):
         print('@###################################')
         contrac2 = Contract()
-        contrac2.symbol = "MSFT"
+        contrac2.symbol = "SPX"
         contrac2.exchange = "SMART"
         contrac2.currency = "USD"
-        contrac2.secType = "STK"
+        contrac2.secType = "IDX"
 
         self.reqContractDetails(self.nextValidOrderId, contrac2)
 #        self.reqHistoricalData(self.nextValidOrderId, contrac2, "20230101-23:59:59", "1 D", "1 min", "MIDPOINT", 1, 1, False, [])

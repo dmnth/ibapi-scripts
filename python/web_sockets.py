@@ -14,8 +14,8 @@ ssl_context = ssl._create_unverified_context()
 
 "smh+265598+{'exchange': 'ISLAND', 'period': '2h', 'bar': '5 min'"
 
-base_url = "https://127.0.0.1:5000/v1/api"
-local_ip = "192.168.1.167:5000"
+local_ip = "192.168.1.167:4001"
+base_url = f"https://{local_ip}/v1/api"
 
 def get_sid():
     resp = requests.get(base_url + "/tickle", verify=False)
@@ -49,64 +49,57 @@ def get_snapshot_data():
     print(resp.text)
 
 def whatif():
+    headers = {"Content-Type": "application/json"}
     url = \
     "https://"+ local_ip +"/v1/api/iserver/account/DU6036902/orders/whatif"
-    params = { 'orders': [
+    params = { "orders": [
         {
-        'acctId': 'DU6036902',
-        'conid': 265598,
-        'secType': 'secType = 265598:STK',
-        'orderType': 'LMT',
-        'listingExchange': 'SMART',
-        'outsideRTH': True,
-        'price': 1,
-        'auxPrice': 0,
-        'side': 'BUY',
-        'ticker': 'AAPL',
-        'tif': 'DAY',
-        'quantity': 12
+        "acctId": "DU6036902",
+        "conid": 265598,
+        "secType": "secType = 265598:STK",
+        "orderType": "LMT",
+        "listingExchange": "SMART",
+        "outsideRTH": True,
+        "price": 1,
+        "auxPrice": 0,
+        "side": "BUY",
+        "ticker": "AAPL",
+        "tif": "DAY",
+        "quantity": 12
         }
         ]
     }
-    # This will not work obviously, throws a 403 - not authorized
-    str_params = "{ 'orders': [{'acctId': 'DU6036902', 'conid': 265598, 'secType': 'secType = 265598:STK', " \
-             "'orderType': 'LMT', 'listingExchange': 'SMART', 'outsideRTH': True, 'price': 1, " \
-             "'auxPrice': 0, 'side': 'BUY', 'ticker': 'AAPL', 'tif': 'DAY', 'quantity': 12}]}"
-    json_params = json.dumps(str_params)
-    print(json_params)
-    payload = {"accountId": "DU6036902", "body": params}
-    resp = requests.post(url, verify=False, data=json_params)
-    print(resp.text)
+    json_params = json.dumps(params)
+    print("Json params: ", json_params)
+    resp = requests.post(url, verify=False, data=json_params, headers=headers)
+    print("Whatif response: ", resp.text)
 
 def place_simple_order():
-    url = 'https://localhost:5000'
+    headers = {"Content-Type": "application/json"}
+    url = 'https://192.168.1.167:4001'
     endpoint = '/v1/api/iserver/account/DU6036902/orders'
-    params = { 'orders': [
+    params = { "orders": [
         {
-        'acctId': 'DU6036902',
-        'conid': 265598,
-        'secType': 'secType = 265598:STK',
-        'orderType': 'LMT',
-        'listingExchange': 'SMART',
-        'outsideRTH': True,
-        'price': 1,
-        'auxPrice': 0,
-        'side': 'BUY',
-        'ticker': 'AAPL',
-        'tif': 'DAY',
-        'quantity': 12
+        "acctId": "DU6036902",
+        "conid": 265598,
+        "secType": "secType = 265598:STK",
+        "orderType": "LMT",
+        "listingExchange": "SMART",
+        "outsideRTH": True,
+        "price": 1,
+        "auxPrice": 0,
+        "side": "BUY",
+        "ticker": "AAPL",
+        "tif": "DAY",
+        "quantity": 12
         }
         ]
     }
-    # This will not work obviously, throws a 403 - not authorized
-    str_params = "{ 'orders': [{'acctId': 'DU6036902', 'conid': 265598, 'secType': 'secType = 265598:STK', " \
-             "'orderType': 'LMT', 'listingExchange': 'SMART', 'outsideRTH': True, 'price': 1, " \
-             "'auxPrice': 0, 'side': 'BUY', 'ticker': 'AAPL', 'tif': 'DAY', 'quantity': 12}]}"
-    json_params = json.dumps(str_params)
+    json_params = json.dumps(params)
     print(json_params)
-    payload = {"accountId": "DU6036902", "body": params}
-    resp = requests.post(url + endpoint, verify=False, data=json_params)
-    print(resp.text)
+    resp = requests.post(url + endpoint, verify=False, data=json_params,
+            headers=headers)
+    print("this: ", resp.text)
 
 def get_accounts_id():
     rsp = requests.get(base_url + '/portfolio/accounts', verify=False)
@@ -214,5 +207,7 @@ def streaming_data_operations():
 
 
 if __name__ == "__main__":
+    authorize()
     whatif()
+    place_simple_order()
 
