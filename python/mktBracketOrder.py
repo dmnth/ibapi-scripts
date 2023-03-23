@@ -79,11 +79,6 @@ class TestApp(EWrapper, EClient):
             self.placeOrder(bo.orderId, contract, bo)
 
     def start(self):
-        # make a one-time market data request, quit when data received
-        # Execute from market data endpoint
-        # First we place bracket order with MKT parent
-        # We wait until MKT order executes
-        # Than we modify stopLoss and takeProfit to set execution prices of parent
         self.placeBracketOrder(self.nextValidOrderId, 103, 80)
         print("Hello, order id is: ", self.nextValidOrderId)
 

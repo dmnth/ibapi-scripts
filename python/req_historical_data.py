@@ -107,6 +107,26 @@ class CustomContracts():
 
         return contract
 
+    def shkntl_contract(self):
+
+        contract = Contract()
+        contract.symbol = "600519"
+        contract.secType = "STK"
+        contract.exchange = "SEHKNTL"
+        contract.currency = "CNH"
+
+        return contract
+
+    def qmi_contract(self):
+
+        contract = Contract()
+        contract.symbol = "QMI"
+        contract.secType = "IND"
+        contract.currency = "USD"
+        contract.exchange = "NASDAQ"
+
+        return contract
+
 
 contracts = CustomContracts()
 
@@ -163,20 +183,21 @@ class TestApp(EWrapper, EClient):
             print("HistoricalTickLast. ReqId:", reqId, tick)
 
     def start(self):
-        querytime = "20230127 15:00:00 US/Eastern"
+        timezone = "US/Eastern"
+        querytime = f"20230127 15:00:00 {timezone}"
 
-        contract = contracts.tsla_contract()
+        contract = contracts.qmi_contract()
 
         self.reqContractDetails(self.nextValidOrderId, contract)
-        startDate = "20230308 10:30:00 US/Eastern"
-        endDate = '20230308 16:30:00 US/Eastern'
+        startDate = f"20230308 10:30:00 {timezone}"
+        endDate = f'20230308 16:30:00 {timezone}'
         self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
                 1)
 
-        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, endDate,
-                10, "TRADES", 1, True, [])
-#        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-#                '1 D', '5 secs', 'TRADES', 0, 1, False, [])
+#        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, "",
+#                10, "TRADES", 1, True, [])
+        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
+                '1 D', '5 secs', 'TRADES', 0, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):
