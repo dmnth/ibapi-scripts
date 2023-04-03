@@ -1,12 +1,17 @@
 #! /usr/bin/env python3
 
 import logging
+import datetime
+import threading
 from threading import Timer
 import ibapi
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
-from ibapi.scanner import ScannerSubscription
-from ibapi.tag_value import TagValue
+from ibapi.order import Order
+from ibapi.contract import Contract
+import json
+# from parse_json import contract
+from bracket_order import bracket_order
 
 class TestApp(EWrapper, EClient):
 
@@ -19,7 +24,7 @@ class TestApp(EWrapper, EClient):
     # WRAPPERS HERE
 
     def error(self, reqId: int, errorCode: int, errorString: str,
-              advansedOrderreject):
+              advansedOrderreject=""):
         super().error(reqId, errorCode, errorString, advansedOrderreject)
         error_message = f'Error id: {reqId}, Error code: {errorCode}, ' \
                         + f'Msg: {errorString}'
@@ -34,28 +39,23 @@ class TestApp(EWrapper, EClient):
         self.nextValidOrderId = orderId # Snippet 1
         self.start()
 
-    def scannerData(self, reqId: int, rank: int, contractDetails,
-                    distance: str, benchmark: str, projection: str, legsStr: str):
-        super().scannerData(reqId, rank, contractDetails, distance, benchmark,
-                            projection, legsStr)
-        print("ScannerData. ReqId:", reqId, contractDetails.contract, rank, distance, benchmark, projection, legsStr)
+    def contractDetails(self, reqId: int, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        print(contractDetails)
 
-    def scannerDataEnd(self, reqId:int):
-        super().scannerDataEnd(reqId)
-        print("ScannerData ReqId: ", reqId)
+    def historicalData(self, reqId:int, bar):
+        print("HistoricalData. ReqId:", reqId, "BarData.", bar)
 
     def start(self):
+        print('@###################################')
+        contrac2 = Contract()
+        contrac2.symbol = "SPX"
+        contrac2.exchange = "SMART"
+        contrac2.currency = "USD"
+        contrac2.secType = "IDX"
 
-        scanner = ScannerSubscription()
-        scanner.scanCode = "TOP_PERC_GAIN"
-        scanner.instrument = "STK"
-        scanner.locationCode = "STK.US.MAJOR"
-
-        tag_values = []
-
-        tag_values.append(TagValue("changePercAbove", "5"))
-
-        self.reqScannerSubscription(self.nextValidOrderId, scanner, [], tag_values)
+        self.reqContractDetails(self.nextValidOrderId, contrac2)
+#        self.reqHistoricalData(self.nextValidOrderId, contrac2, "20230101-23:59:59", "1 D", "1 min", "MIDPOINT", 1, 1, False, [])
 
     def stop(self):
         self.done = True
