@@ -1,14 +1,13 @@
+#! /usr/bin/env python3
+
 import logging
 import ibapi
+import time
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.contract import Contract
 from ibapi.execution import Execution
-from bracket_order import BracketOrder
-
-# Bracket order with parent of type market 
-# stopLoss and takeProfit are set with n% values
-# from execution price of parent order
+from bracketOrder import BracketOrder
 
 class TestApp(EWrapper, EClient):
 
@@ -18,18 +17,13 @@ class TestApp(EWrapper, EClient):
         EClient.__init__(self, self)
         self.dataframe = {}
 
-    # WRAPPERS HERE
-
     def error(self, reqId: int, errorCode: int, errorString: str,
-              advansedOrderreject):
+              advansedOrderreject=""):
         super().error(reqId, errorCode, errorString, advansedOrderreject)
         error_message = f'Error id: {reqId}, Error code: {errorCode}, ' \
                         + f'Msg: {errorString}'
         print(error_message)
-    #
-    # Provides next valid identifier needed to place an order
-    # Indicates that the connection has been established and other messages can be sent from
-    # API to TWS
+       
     def nextValidId(self, orderId):
         super().nextValidId(orderId)
         logging.debug(f"Next valid ID is set to {orderId}")
@@ -58,13 +52,15 @@ class TestApp(EWrapper, EClient):
         contract.currency = "EUR"
         contract.secType = "STK"
         # takeprofitlimitprice value can be set to any value, or completely removed from bracket order implementation
-        bracket_order = BracketOrder(parentOrderId=execution.orderId,
+        bracket_order = BracketOrder(parentOrderId=orderID,
                                      action="BUY",
-                                     quantity=1,
-                                     limitPrice=1,
+                                     quantity=4,
+                                     limitPrice=103.5,
                                      takeProfitLimitPrice=takePrice,
                                      stopLossPrice=stopPrice)
         for bo in bracket_order[1:]:
+            if bo.transmit != True:
+                bo.transmit = True
             self.placeOrder(bo.orderId, contract, bo)
 
     def placeBracketOrder(self, orderID, takeProfitPrice, stopLossPrice):
@@ -78,6 +74,8 @@ class TestApp(EWrapper, EClient):
         for bo in bracket_order:
             self.placeOrder(bo.orderId, contract, bo)
 
+        time.sleep(4)
+        self.modifyBracketOrder(self.nextValidOrderId, 12)
     def start(self):
         self.placeBracketOrder(self.nextValidOrderId, 103, 80)
         print("Hello, order id is: ", self.nextValidOrderId)
@@ -90,7 +88,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('127.0.0.1', 7496, clientId=0)
+        app.connect('192.168.1.167', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(5, app.stop).start()

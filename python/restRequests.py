@@ -29,8 +29,14 @@ def accountTrades():
             headers=headers)
     jsonData = json.loads(resp.text)
     print(resp.headers)
+    print(resp.content.decode())
+
+def checkTypes(jsonData):
     for element in jsonData:
-        print(json.dumps(element, indent=4))
+        for k,v in element.items():
+            if type(k) == bytes or type(v) == bytes:
+                print(f"some exception occured - {type(k)}: {type(v)}")
+    print("Done comparing")
     
 def placeOrder():
     endpoint = '/iserver/account/DU6036902/orders'
@@ -65,4 +71,4 @@ if __name__ == "__main__":
         parser.print_help()
     else:
         print(args)
-        main(args.username)
+        main()
