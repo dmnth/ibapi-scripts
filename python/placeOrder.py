@@ -10,6 +10,7 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from stopLimitOrder import stopLimitOrder
 
 def bmwContract():
 
@@ -35,6 +36,19 @@ def conidContract():
 
     return contract
 
+def qqqContract():
+
+    contract = Contract()
+    contract.symbol = "QQQ"
+    contract.exchange = "SMART"
+    contract.primaryExchange = "NASDAQ"
+    contract.currency = "USD"
+    contract.tradingClass = "NMS"
+    contract.localSymbol = "QQQ"
+    contract.secType = "STK"
+
+    return contract
+
 def goodAfterTimeOrder():
 
     order = Order()
@@ -56,6 +70,16 @@ def sellLimitOrder():
     order.transmit = True 
 
     return order
+
+def aaplContract():
+
+    contract = Contract()
+    contract.symbol = "AAPL"
+    contract.exchange = "SMART"
+    contract.currency = "USD"
+    contract.secType = "STK"
+
+    return contract
 
 
 
@@ -108,23 +132,10 @@ class TestApp(EWrapper, EClient):
         print("OpenOrderEnd")
 
     def start(self):
-
-        
-        self.reqAllOpenOrders()
-
-        contract = bmwContract()
-        order = sellLimitOrder()
-
-        self.reqContractDetails(self.nextValidOrderId, contract)
-
-        order.transmit = False
-        self.placeOrder(self.nextValidOrderId, contract, order)
-
-        time.sleep(4)
-
-        order.transmit = True
-        self.placeOrder(self.nextValidOrderId + 1, contract, order)
-
+        stpLmtOrder = stopLimitOrder(self.nextValidOrderId, "BUY", 1, 12, 13, 0.5)
+        somestock = qqqContract()
+        for odr in stpLmtOrder:
+            self.placeOrder(odr.orderId, somestock, odr)
 
     def stop(self):
         self.done = True

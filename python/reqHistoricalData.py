@@ -209,11 +209,12 @@ class TestApp(EWrapper, EClient):
         timezone = "US/Eastern"
         querytime = f"20230127 15:00:00 {timezone}"
 
-        contract = contracts.tsla_contract()
+        contract = contracts.aapl_contract()
 
         self.reqContractDetails(self.nextValidOrderId, contract)
         startDate = f"20230308 10:30:00 {timezone}"
         endDate = f'20230418 16:30:00 {timezone}'
+        endDate = "20230418 16:30:00 "
 #        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
 #                1)
 

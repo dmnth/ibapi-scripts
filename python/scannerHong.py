@@ -46,7 +46,7 @@ class TestApp(EWrapper, EClient):
     
     def scannerDataEnd(self, reqId):
         super().scannerDataEnd(reqId)
-        print("ScannerData ReqId: ", reqId)
+        print("ScannerDataEnd ReqId: ", reqId)
 
     def scannerParameters(self, xml):
         super().scannerParameters(xml)
@@ -57,13 +57,13 @@ class TestApp(EWrapper, EClient):
         
         self.reqScannerParameters()
         scanner = ScannerSubscription()
-        scanner.scanCode = "TOP_PERC_GAIN"
+        scanner.scanCode = "HIGH_VS_52W_HL"
         scanner.instrument = "STK"
-        scanner.locationCode = "STK.HK" 
+        scanner.locationCode = "STK.US.MAJOR" 
 
         tag_values = []
 
-        tag_values.append(TagValue("changePercAbove", '10'))
+        tag_values.append(TagValue("changePercAbove", '29'))
 
         self.reqScannerSubscription(self.nextValidOrderId, scanner, [],
                 tag_values)

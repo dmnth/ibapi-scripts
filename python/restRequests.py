@@ -19,6 +19,46 @@ headers = {
         }
 
 
+def futuresContractPerSymbol(symbol: str):
+    endpoint = "/trsrv/futures"
+    data = {"symbols": symbol}
+    resp = requests.get(base_url + endpoint, verify=False, params=data)
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        if len(jsonData.keys()) != 0:
+            validContracts = jsonData[data['symbols']]
+            return validContracts
+
+def getSpecificContractDetails(conId):
+    endpoint = f"/iserver/contract/{conId}/info"
+    data = {"conid": conId}
+    resp = requests.get(base_url + endpoint, verify=False, params=data)
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        return jsonData
+
+def getOrderIds():
+    resp = requests.get(base_url + "/iserver/account/orders", verify=False, 
+            headers=headers)
+    jsonData = json.loads(resp.text)
+    ids = []
+    for order in jsonData['orders']:
+        prettyJson = json.dumps(order, indent=4)
+        if "orderId" in order.keys():
+            if order['orderId'] not in ids:
+                ids.append(order['orderId'])
+    return ids
+
+def getAccounts():
+    resp = requests.get(base_url + "/iserver/accounts", verify=False, 
+            headers=headers)
+    jsonData = json.loads(resp.text)
+    accounts = jsonData['accounts']
+    if len(accounts) > 0:
+        return accounts
+    else:
+        print("Go open an account, will ya.")
+
 def checkAuthStatus():
     resp = requests.get(base_url + "/iserver/auth/status", verify=False)
     jsonData = json.loads(resp.text)
@@ -61,9 +101,24 @@ def placeOrder():
     resp = requests.post(base_url + endpoint, verify=False, data=json_params,
             headers=headers)
 
+def cancelOrder(accountID, orderID):
+    endpoint = f'/iserver/account/{accountID}/order/{orderID}'
+    resp = requests.delete(base_url + endpoint, verify=False, headers=headers)
+    print(resp.text)
+
 def main():
+    # Place an order, reply, monitor websockets for updates of sor+{} requests
     checkAuthStatus()
-    accountTrades()
+    contracts = futuresContractPerSymbol("MES")
+    contract = getSpecificContractDetails(contracts[0]['conid'])
+    print(contract)
+#    accountTrades()
+#    placeOrder()
+#    orderIDs = getOrderIds()
+#    accounts = getAccounts()
+#    acc = accounts[0]
+#    oid = orderIDs[0]
+#    cancelOrder(acc, oid)
 
 if __name__ == "__main__":
     if args.address == None:
