@@ -9,7 +9,7 @@ import websockets
 
 ssl_context = ssl._create_unverified_context()
 
-local_ip = "192.168.43.222:5000"
+local_ip = "192.168.1.167:5000"
 base_url = f"https://{local_ip}/v1/api"
 
 #Historical data payload:
@@ -26,6 +26,11 @@ def create_SMH_req(conID, period, barSize, dataType, dateFormat):
 def create_SMD_req(conId, args):
 #    msg = "smd+" + conId + '+' + '{"fields":["31","83"]}'
     msg = "smd+" + conId + '+' + json.dumps({"fields":args})
+    return msg
+
+# Live order updates request
+def create_SOR_req():
+    msg = "sor+{}"
     return msg
 
 def processHistoricaReq(serverID):
@@ -54,7 +59,8 @@ async def market_data_requests(mdd_request):
 def main():
     smd_req = create_SMD_req('265598', ['31', '83', '84', '85', '86'])
     smh_req = create_SMH_req("265598", "1d", "1hour", "trades", "%o/%c/%h/%l") 
-    asyncio.get_event_loop().run_until_complete(market_data_requests(smd_req))
+    sor_req = create_SOR_req()
+    asyncio.get_event_loop().run_until_complete(market_data_requests(sor_req))
 
 if __name__ == "__main__":
     main()

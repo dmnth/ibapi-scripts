@@ -103,10 +103,6 @@ def placeOrder(accId: str, orderDict: dict):
                     messages['message'] = el['message']
     return messages                
 
-def cancelOrder(accountID, orderID):
-    endpoint = f'/iserver/account/{accountID}/order/{orderID}'
-    resp = requests.delete(base_url + endpoint, verify=False, headers=headers)
-    print(resp.text)
 
 def getContractRules(conID):
     print("is called")
@@ -153,15 +149,15 @@ def createOrderPayload(accId: str, conId: int, orderType: str, exchange: str,
 
     return data
 
-def createMutliplePayloads(conDefList):
+def createMutliplePayloads(accId, conDefList):
     payloads = []
     for con in conDefList:
         payload = createOrderPayload(
-                accId="0test0",
+                accId=accId,
                 conId=con['conid'],
                 orderType="LMT",
                 exchange=con['listingExchange'],
-                orth=True,
+                orth=False,
                 price=1,
                 action="BUY",
                 symbol=con['ticker'],
@@ -182,52 +178,81 @@ def orderReply(replyID):
         if type(e) is dict:
             if 'id' in e.keys():
                 orderReply(e['id'])
-        else:
-            print(e)
+            else:
+                print(e)
+                return jsonData
 
-def main():
-    # Place an order, reply, monitor websockets for updates of sor+{} requests
-    checkAuthStatus()
+        print("TYPE: ",type(e))
+
+def writeOids
+
+def placeMesFutOrders():
     contracts = futuresContractPerSymbol("MES")
     contract = getSpecificContractDetails(contracts[0]['conid'])
-#    getContractRules(contracts[0]['conid'])
-#    print(contract)
-#    getTradingSchedule(contract['instrument_type'], contract['symbol'])
     conIdList = [con['conid'] for con in contracts]
     conDefList = getSecDefPerConId(conIdList)
     # Take one contract from a list and place order for it
     curCon = conDefList[0]
     accountId = getAccounts()[0]
     print("Current accountID: ", accountId)
-    print("Current contract: ", curCon)
-    payload = createOrderPayload(
+    print("Current contract: ", curCon) 
+    singlePayload = createOrderPayload(
             accId=accountId,
             conId=curCon['conid'],
             orderType="LMT",
             exchange=curCon['listingExchange'],
             orth=False,
-            price=4445,
-            action="BUY",
+            price=4430,
+            action="SELL",
             symbol=curCon['ticker'],
             quantity=5,
             tif="DAY"
              )
-    print("Current payload:", payload)
-    messages = placeOrder(accountId, payload)
-    if "error" not in messages.keys():
-        print(messages)
-        replyId = messages['id']
-        orderReply(replyId)
-    else:
-        print(messages['error'])
+    print("Current payload:", singlePayload)
+    payloads = createMutliplePayloads(accountId, conDefList)
+    for p in payloads:
+        messages = placeOrder(accountId, p)
+        if "id" in messages.keys():
+            replyId = messages['id']
+            orderData = orderReply(replyId)
+            print('ORDER data: ', orderData)#
 
-#    accountTrades()
-#    placeOrder()
-#    orderIDs = getOrderIds()
-#    accounts = getAccounts()
-#    acc = accounts[0]
-#    oid = orderIDs[0]
-#    cancelOrder(acc, oid)
+        elif "error" in messages.keys():
+            print(messages['error'])
+
+
+def getLiveOrders():
+    endpoint = base_url + "/iserver/account/orders"
+    response = requests.get(endpoint, verify=False, headers=headers)
+    jsonData = json.loads(response.text)
+    orderIds = []
+    for order in jsonData['orders']:
+        orderIds.append(order['orderId'])
+
+    return orderIds
+
+
+def cancelOrder(accountID, orderID):
+    endpoint = f'/iserver/account/{accountID}/order/{orderID}'
+    data = {"accountId": accountID, "orderId": orderID}
+    print(data)
+    resp = requests.delete(base_url + endpoint, params=data, verify=False, headers=headers)
+    print(resp.text)
+
+def cancelAllOrders():
+    orderIds = getLiveOrders()
+    accId = getAccounts()[0]
+    cancelOrder(accId, orderIds[0])
+    while len(orderIds) != 0:
+        toCancelId = orderIds.pop(0)
+        cancelOrder(accId, toCancelId)
+
+def main():
+    # Place an order, reply, monitor websockets for updates of sor+{} requests
+    checkAuthStatus()
+    getLiveOrders()
+    placeMesFutOrders()
+    cancelAllOrders()
 
 if __name__ == "__main__":
     if args.address == None:
