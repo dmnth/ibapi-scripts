@@ -24,8 +24,8 @@ def create_SMH_req(conID, period, barSize, dataType, dateFormat):
 
 # Streaming data request
 def create_SMD_req(conId, args):
-#    msg = "smd+" + conId + '+' + '{"fields":["31","83"]}'
-    msg = "smd+" + conId + '+' + json.dumps({"fields":args})
+    msg = "smd+" + conId + '+' + '{"fields":["31","83"]}'
+#    msg = "smd+" + conId + '+' + json.dumps({"fields":args})
     return msg
 
 # Live order updates request
@@ -60,7 +60,7 @@ def main():
     smd_req = create_SMD_req('265598', ['31', '83', '84', '85', '86'])
     smh_req = create_SMH_req("265598", "1d", "1hour", "trades", "%o/%c/%h/%l") 
     sor_req = create_SOR_req()
-    asyncio.get_event_loop().run_until_complete(market_data_requests(sor_req))
+    asyncio.get_event_loop().run_until_complete(market_data_requests(smd_req))
 
 if __name__ == "__main__":
     main()

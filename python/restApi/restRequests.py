@@ -18,6 +18,27 @@ headers = {
         "Content-type": "application/json"
         }
 
+# /iserver/accounts should be queried
+def snapShotDataSubscribe(conIds: str, fields: str):
+    endpoint = base_url + "/iserver/marketdata/snapshot"
+    conIds = conIds.split(',')
+#    fields = fields.split(',')
+    data = {
+            "conids": conIds,
+            "fields": fields
+            }
+    response = requests.get(endpoint, verify=False, params=data, headers=headers)
+    print(response.text)
+    return
+
+def snapShotDataUnsubscribe(conid):
+    endpoint = base_url + f"/iserver/marketdata/{conid}/unsubscribe"
+    data = {"conid": conid}
+    response = requests.get(endpoint, params=data, verify=False, headers=headers)
+    if response.status_code == 200:
+        print(response.text)
+    else:
+        print(response.status_code, ", shit")
 
 def futuresContractPerSymbol(symbol: str):
     endpoint = "/trsrv/futures"
@@ -184,7 +205,9 @@ def orderReply(replyID):
 
         print("TYPE: ",type(e))
 
-def writeOids
+def writeOids():
+    # Compare if all id's that are placed - are cancelled
+    return
 
 def placeMesFutOrders():
     contracts = futuresContractPerSymbol("MES")
@@ -250,9 +273,8 @@ def cancelAllOrders():
 def main():
     # Place an order, reply, monitor websockets for updates of sor+{} requests
     checkAuthStatus()
-    getLiveOrders()
-    placeMesFutOrders()
-    cancelAllOrders()
+#    snapShotDataSubscribe("481691285", "")
+    snapShotDataUnsubscribe("481691285")
 
 if __name__ == "__main__":
     if args.address == None:
