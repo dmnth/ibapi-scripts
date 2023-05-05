@@ -103,6 +103,7 @@ class TestApp(EWrapper, EClient):
         self.nextValidOrderId = orderId
         self.start()
         print(f"Next valid order ID: {orderId}")
+
     def openOrder(self, orderId, contract, order: Order,
                   orderState):
         super().openOrder(orderId, contract, order, orderState)
@@ -132,10 +133,19 @@ class TestApp(EWrapper, EClient):
         print("OpenOrderEnd")
 
     def start(self):
-        stpLmtOrder = stopLimitOrder(self.nextValidOrderId, "BUY", 1, 12, 13, 0.5)
-        somestock = qqqContract()
-        for odr in stpLmtOrder:
-            self.placeOrder(odr.orderId, somestock, odr)
+
+        contract = Contract()
+        contract.symbol = "AAPL"
+        contract.secType = "STK"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        order = Order()
+        order.action = "BUY"
+        order.totalQuantity = 1
+        order.orderType = "MKT"
+        
+        self.placeOrder(self.nextValidOrderId, contract, order)
 
     def stop(self):
         self.done = True

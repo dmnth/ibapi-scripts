@@ -2,6 +2,7 @@
 
 import logging
 import datetime
+import time
 from threading import Timer
 import ibapi
 from ibapi.wrapper import EWrapper
@@ -9,6 +10,7 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from datetime import datetime
+from threading import Thread
 
 class CustomContracts():
 
@@ -203,6 +205,10 @@ class TestApp(EWrapper, EClient):
             self.convert_unix_timestamp(tick.time)
             print("HistoricalTickLast. ReqId:", reqId, tick)
 
+    def historicalDataEnd(self, reqId, start, end):
+        super().historicalDataEnd(reqId, start, end)
+        print("Historical data end for: ", self.clientId)
+
     def start(self):
         # TWS will retunr data only for instrument's timezone or 
         # for time zone that is configured as local in TWS settings.
@@ -210,11 +216,11 @@ class TestApp(EWrapper, EClient):
         querytime = f"20230127 15:00:00 {timezone}"
 
         contract = contracts.aapl_contract()
-
+        print(self.clientId)
         self.reqContractDetails(self.nextValidOrderId, contract)
         startDate = f"20230308 10:30:00 {timezone}"
         endDate = f'20230418 16:30:00 {timezone}'
-        endDate = "20230418 16:30:00 "
+        endDate = "20230418 16:30:00"
 #        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
 #                1)
 
@@ -228,13 +234,32 @@ class TestApp(EWrapper, EClient):
         self.done = True
         self.disconnect()
 
+# Create a list of clients:
+def threadedExecution():
+
+    def createConnectApp(ip, port, clientId):
+        print("Connected")
+        app = TestApp()
+        app.connect(ip, port, clientId)
+        app.run()
+    
+    cls = []
+    for i in range(2):
+        thread = Thread(target=createConnectApp, args=("192.168.1.167", 7496, i))
+        thread.start()
+        cls.append(thread)
+
+    for thread in cls:
+        thread.join()
+
+
 def main():
+    threadedExecution()
     try:
         app = TestApp()
         app.connect('192.168.1.167', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
-#        Timer(5, app.stop).start()
         app.run()
     except Exception as err:
         print(err)
