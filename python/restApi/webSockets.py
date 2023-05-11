@@ -1,12 +1,10 @@
 #! /usr/bin/env python3
 
-
 import asyncio
 import ssl
 import json
 import requests
 import websockets
-from errors import CpError
 
 ssl_context = ssl._create_unverified_context()
 
@@ -23,6 +21,49 @@ def create_SMH_req(conID, period, barSize, dataType, dateFormat):
         }) 
     return msg
 
+def authStatus():
+    resp = requests.post(base_url + "/iserver/auth/status", verify=False) 
+    if resp.status_code == 200:
+        print(resp.text)
+    else:
+        raise RuntimeError(f"Received http status code: {resp.status_code}")
+
+
+def getAccountId():
+    resp = requests.get(base_url + "/iserver/accounts", verify=False) 
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        accounts = jsonData['accounts']
+        return accounts
+    else:
+        print(resp.status_code, resp.text)
+        raise RuntimeError("!???")
+
+def searchBySymbol(symbol: str, sectype: str):
+    data = {
+            "symbol": symbol,
+            "name": True,
+            "secType": sectype,
+            }
+    resp = requests.post(base_url + "/iserver/secdef/search", json=data, verify=False)
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        print(jsonData)
+        conid = jsonData[0]['conid']
+        return conid
+    else:
+        raise RuntimeError(f"Nothing found for symbol {symbol}")
+
+def getContractDetails(conId):
+    endpoint = f"/iserver/contract/{conId}/info"
+    data = {"conid": conId}
+    resp = requests.get(base_url + endpoint, verify=False, params=data)
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        return jsonData
+    else:
+        raise RuntimeError(f"No contracts found for {conId}")
+
 # Streaming data request, accepts comma-separated values
 def create_SMD_req(conId, args: str):
     args = args.split(',')
@@ -30,60 +71,87 @@ def create_SMD_req(conId, args: str):
     msg = "smd+" + conId + '+' + json.dumps({"fields":args})
     return msg
 
+def marketDepthRequest(conID, acctID=None, exchange=None):
+
+    if acctID is None:
+        acctIDs = getAccountId()
+        acctID = acctIDs[0]
+
+    if exchange is None:
+        details = getContractDetails(conID)
+        exchange = details['exchange']
+
+    msg = f"sbd+{acctID}+{conID}+{exchange}"
+
+    return msg 
+
+
 # Live order updates request
 def create_SOR_req():
     msg = "sor+{}"
     return msg
 
 def unsubscibeHistoricalData(serverID):
-    # Escape curly braces with f string by adding more curly braces
     msg = "umh+" + serverID 
     return msg
 
-async def market_data_requests(mdd_request):
-    async with websockets.connect("wss://" + local_ip + "/v1/api/ws", ssl=ssl_context) as websocket:
-        while True:
-            await asyncio.sleep(1)
-            await websocket.send(mdd_request)
-            rst = await websocket.recv()
-            result_dict = json.loads(rst.decode())
-            # Since only 5 concurrent historical requests are allowed - unsubscibe
-            print(result_dict)
+def createRequests(conId):
+    smd_req = create_SMD_req(conId, "31, 84, 86")
+    smh_req = create_SMH_req(conId, "1d", "1hour", "trades", "%o/%c/%h/%l") 
+    sor_req = create_SOR_req()
+    mktDpthReq = marketDepthRequest(conId) 
+    msgList = [smd_req, sor_req, smh_req, mktDpthReq]
 
-# Allows 5 concurrent requests, serverID is required to unsubscribe.
-async def sendMessages(msgLst):
+    return msgList
+
+
+async def sendMessages(msgList):
+
+    messages = msgList 
+    mktDepthUnsubscribed = False
+    historicalDataUnsubscribed = False
+
     async with websockets.connect("wss://" + local_ip + "/v1/api/ws", ssl=ssl_context) as websocket:
         while True:
-            # Create a queue of messages
-            if len(msgLst) != 0:
-                currentMsg = msgLst.pop(0)
+            if len(messages) != 0:
+                # *Imitates queue* 
+                currentMsg = messages.pop(0)
                 await asyncio.sleep(1)
                 await websocket.send(currentMsg)
 
-            # Process the responses
             rst = await websocket.recv()
-            result_dict = json.loads(rst.decode())
+            jsonData = json.loads(rst.decode())
 
-            if 'topic' in result_dict.keys():
+            if 'topic' in jsonData.keys():
 
-                if result_dict['topic'].startswith("smh+"):
-                    serverID = result_dict['serverId']
+                if jsonData['topic'].startswith("smh+") and historicalDataUnsubscribed == False:
+                    serverID = jsonData['serverId']
                     msg = unsubscibeHistoricalData(serverID)
-                    await websocket.send(msg)
+                    messages.append(msg)
+                    historicalDataUnsubscribed = True
                     print("historical data should be unsubscribed now")
 
-            if 'error' in result_dict.keys():
-                print(result_dict['error'])
+                if jsonData['topic'] == "sbd" and mktDepthUnsubscribed == False:
+                    acctID = getAccountId()
+                    msg = f"ubd+{acctID}"
+                    messages.append(msg)
+                    mktDepthUnsubscribed = True
+                    print("Market depth data was unsubscribed")
+
+                if jsonData['topic'] == "system": 
+                    # Keep session alive 
+                    messages.append('tic')
+
+            if 'error' in jsonData.keys():
+                print(jsonData['error'])
+
             
-            print(result_dict)
+            print(jsonData)
 
 def main():
-    smd_req = create_SMD_req('265598', "31, 84, 86")
-    smh_req = create_SMH_req("265598", "1d", "1hour", "trades", "%o/%c/%h/%l") 
-    sor_req = create_SOR_req()
-    msgList = [smd_req, sor_req, smh_req]
+    conId = searchBySymbol("TSLA", "STK")
+    msgList = createRequests(conId)
     asyncio.get_event_loop().run_until_complete(sendMessages(msgList))
-    simpleConnection(smd_req)
 
 if __name__ == "__main__":
     main()

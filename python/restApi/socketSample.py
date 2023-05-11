@@ -8,7 +8,7 @@ import websocket
 import json
 import time
 
-localIP = "192.168.43.222"
+localIP = "192.168.0.211"
 BASE_URL = f"{localIP}:5000/v1/api"
 
 
