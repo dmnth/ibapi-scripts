@@ -124,6 +124,7 @@ def processMsg(websocket, msg, mktDpthResponse=None):
         res = websocket.recv()
         print("Unsubscribed from market depth")
 
+# One request at a time can be processed because websockets are meant to be async
 def main():
     session_id = request_session_id()
     websocket = get_websocket_client(session_id)
@@ -157,7 +158,7 @@ def main():
             websocket_message = websocket.recv()
             msg = json.loads(websocket_message.decode())
             # Implement message handling here, for example add unsubscribe logic
-#            time.sleep(2)
+            time.sleep(2)
             processMsg(websocket, msg, mktDpthMsg['unsubscribe'])
             prettyMsg = json.dumps(msg, indent=4)
 #            print(prettyMsg)
