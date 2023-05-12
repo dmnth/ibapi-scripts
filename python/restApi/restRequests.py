@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
 args = parser.parse_args()
 
-local_ip = "192.168.1.167:5000"
+local_ip = "192.168.43.222:5000"
 base_url = f"https://{local_ip}/v1/api"
 headers = {
         "User-Agent": "python-requests/2.28.1",
@@ -205,12 +205,61 @@ def orderReply(replyID):
 
         print("TYPE: ",type(e))
 
-def writeOids():
-    # Compare if all id's that are placed - are cancelled
-    return
+def getOrderStatus(orderId):
+    endpoint = base_url + f"/iserver/account/order/status/{orderId}"
+    data = {'orderId': orderId}
+    response = requests.get(endpoint, verify=False, params=data, headers=headers)
+    jsonData = json.loads(response.text)
+    print(jsonData)
 
-def placeMesFutOrders():
-    contracts = futuresContractPerSymbol("MES")
+def invalidatePositions(accId):
+    endpoint = base_url + f"/portfolio/{accId}/positions/ivalidate"
+    data = {"accountId": accId}
+    response = requests.post(endpoint, json=data, verify=False, headers=headers)
+    print(response.text)
+
+def getPortfolioPositions(accId, pageId):
+    data = {
+            "accountId": accId,
+            "pageId": pageId,
+            "model": "",
+            "sort": "",
+            "direction": "",
+            "period": ""
+            }
+    endpoint = base_url + f"/portfolio/{accId}/positions/{pageId}"
+    response = requests.get(endpoint, params=data, verify=False, headers=headers)
+
+    if response.status_code == 200:
+        jsonData = json.loads(response.text)
+        print(jsonData)
+
+    else:
+        raise RuntimeError("")
+
+
+def placeSingleOrder(symbol):
+    contract = searchBySymbol(symbol, "STK")
+    print(contract)
+    accId = getAccounts()[0]
+    orderPayload = createOrderPayload(
+            accId = accId,
+            conId=int(contract['conid']),
+            orderType="LMT",
+            exchange="SMART",
+            orth=False,
+            price=1,
+            action="BUY",
+            symbol=contract['symbol'],
+            quantity=1,
+            tif="DAY"
+            )
+    resp = placeOrder(accId, orderPayload)
+    print("Response from order placement: ", resp)
+
+
+def placesFutOrders(symbol):
+    contracts = futuresContractPerSymbol(symbol)
     contract = getSpecificContractDetails(contracts[0]['conid'])
     conIdList = [con['conid'] for con in contracts]
     conDefList = getSecDefPerConId(conIdList)
@@ -254,6 +303,20 @@ def getLiveOrders():
 
     return orderIds
 
+def searchBySymbol(symbol: str, sectype: str):
+    data = {
+            "symbol": symbol,
+            "name": True,
+            "secType": sectype,
+            }
+    resp = requests.post(base_url + "/iserver/secdef/search", json=data, verify=False)
+    print("HERE: ", resp.text)
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        contract = jsonData[0]
+        return contract 
+    else:
+        raise RuntimeError(f"Nothing found for symbol {symbol}")
 
 def cancelOrder(accountID, orderID):
     endpoint = f'/iserver/account/{accountID}/order/{orderID}'
@@ -271,10 +334,14 @@ def cancelAllOrders():
         cancelOrder(accId, toCancelId)
 
 def main():
-    # Place an order, reply, monitor websockets for updates of sor+{} requests
     checkAuthStatus()
-#    snapShotDataSubscribe("481691285", "")
-    snapShotDataUnsubscribe("481691285")
+    accId = getAccounts()[0]
+    placeSingleOrder("BMW")
+    orders = getLiveOrders()
+    for orderId in orders:
+        getOrderStatus(orderId)
+    invalidatePositions(accId)        
+    getPortfolioPositions(accId, 1)
 
 if __name__ == "__main__":
     if args.address == None:
