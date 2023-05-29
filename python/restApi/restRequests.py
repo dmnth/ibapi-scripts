@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
 args = parser.parse_args()
 
-local_ip = "192.168.43.222:5000"
+local_ip = "192.168.1.167:5000"
 base_url = f"https://{local_ip}/v1/api"
 headers = {
         "User-Agent": "python-requests/2.28.1",
@@ -81,6 +81,10 @@ def getAccounts():
     else:
         print("Go open an account, will ya.")
 
+def callPortfolioAccounts():
+    resp = requests.get(base_url + "/portfolio/accounts", verify=False)
+    print(resp.text)
+
 def checkAuthStatus():
     resp = requests.get(base_url + "/iserver/auth/status", verify=False)
     jsonData = json.loads(resp.text)
@@ -110,8 +114,8 @@ def placeOrder(accId: str, orderDict: dict):
     resp = requests.post(base_url + endpoint, verify=False, json=data,
             headers=headers)
     jsonData = json.loads(resp.text)
+    print(jsonData)
     messages = {}
-    print(type(jsonData))
     if type(jsonData) == dict and "error" in jsonData.keys():
         print("ERROR: ", jsonData['error'])
         messages['error'] = jsonData['error']
@@ -218,7 +222,7 @@ def invalidatePositions(accId):
     response = requests.post(endpoint, json=data, verify=False, headers=headers)
     print(response.text)
 
-def getPortfolioPositions(accId, pageId):
+def getPortfolioPositionsByPage(accId, pageId):
     data = {
             "accountId": accId,
             "pageId": pageId,
@@ -227,7 +231,25 @@ def getPortfolioPositions(accId, pageId):
             "direction": "",
             "period": ""
             }
-    endpoint = base_url + f"/portfolio/{accId}/positions/{pageId}"
+    endpoint = base_url + f"/portfolio/{accId}/positions"
+    response = requests.get(endpoint, params=data, verify=False, headers=headers)
+
+    if response.status_code == 200:
+        jsonData = json.loads(response.text)
+        print("Positions --> ", jsonData)
+
+    else:
+        raise RuntimeError("")
+
+def getPortfolioPositions(accId):
+    data = {
+            "accountId": accId,
+            "model": "",
+            "sort": "",
+            "direction": "",
+            "period": ""
+            }
+    endpoint = base_url + f"/portfolio/{accId}/positions"
     response = requests.get(endpoint, params=data, verify=False, headers=headers)
 
     if response.status_code == 200:
@@ -310,7 +332,6 @@ def searchBySymbol(symbol: str, sectype: str):
             "secType": sectype,
             }
     resp = requests.post(base_url + "/iserver/secdef/search", json=data, verify=False)
-    print("HERE: ", resp.text)
     if resp.status_code == 200:
         jsonData = json.loads(resp.text)
         contract = jsonData[0]
@@ -326,6 +347,7 @@ def cancelOrder(accountID, orderID):
     print(resp.text)
 
 def cancelAllOrders():
+    # to cancel all orders send -1 as ID value
     orderIds = getLiveOrders()
     accId = getAccounts()[0]
     cancelOrder(accId, orderIds[0])
@@ -341,7 +363,7 @@ def main():
     for orderId in orders:
         getOrderStatus(orderId)
     invalidatePositions(accId)        
-    getPortfolioPositions(accId, 1)
+    getPortfolioPositionsByPage(accId, 1)
 
 if __name__ == "__main__":
     if args.address == None:
