@@ -35,9 +35,23 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
+    def historicalData(self, reqId, bar):
+        super().historicalData(reqId, bar)
+        print("Historical data: ", reqId, bar)
+
+    def historicalDataEnd(self, reqId, start, end):
+        super().historicalDataEnd(reqId, start, end)
+        print("Historical data end for: ", self.clientId)
+
     def start(self):
-        self.reqContractDetails(self.nextValidOrderId, contract)
-        self.placeOrder(self.nextValidOrderId, contract, order)
+        contract = Contract()
+        contract.symbol = "EUR"
+        contract.exchange = "IDEALPRO"
+        contract.secType = "CASH"
+        contract.currency = "USD"
+        endDate = f'20230418 16:30:00 {timezone}'
+        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
+                '1 W', '1 hour', 'TRADES', 0, 1, False, [])
 
     def stop(self):
         self.done = True

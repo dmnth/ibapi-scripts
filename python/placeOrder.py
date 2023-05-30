@@ -11,6 +11,7 @@ from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
 from stopLimitOrder import stopLimitOrder
+from conditionalOrder import conditionalBracketOrder
 
 def bmwContract():
 
@@ -140,11 +141,9 @@ class TestApp(EWrapper, EClient):
         contract.exchange = "SMART"
         contract.currency = "USD"
 
-        order = Order()
-        order.action = "BUY"
-        order.totalQuantity = 1
-        order.orderType = "MKT"
-        
+        order = conditionalBracketOrder(self.nextValidOrderId)
+        print(order)
+
         self.placeOrder(self.nextValidOrderId, contract, order)
 
     def stop(self):

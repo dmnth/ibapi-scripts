@@ -83,6 +83,18 @@ def spxw_opt():
 
     return contract
 
+def eminiContract():
+
+    contract = Contract()
+    contract.exchange = "CME"
+    contract.symbol = "NQM3"
+    contract.currency = "USD"
+    contract.secType= "FUT"
+    contract.multiplier = 20
+    contract.lastTradeDateOrContractMonth = "20230616"
+
+    return contract
+
 class TestApp(EWrapper, EClient):
 
     def __init__(self):
@@ -112,8 +124,7 @@ class TestApp(EWrapper, EClient):
                                           expirations, strikes):
         super().securityDefinitionOptionParameter(reqId, exchange,
                                                   underlyingConId, tradingClass, multiplier, expirations, strikes)
-        if tradingClass == "SPXW":
-            print("SecurityDefinitionOptionParameter.",
+        print("SecurityDefinitionOptionParameter.",
                   "ReqId:", reqId, "Exchange:", exchange, "Underlying conId:", intMaxString(underlyingConId), "TradingClass:", tradingClass, "Multiplier:", multiplier,
                   "Expirations:", expirations, "Strikes:", str(strikes))
 
@@ -123,13 +134,19 @@ class TestApp(EWrapper, EClient):
         print(contractDetails)
 
     def start(self):
-        contract = spx_contract()
-        example = sample_contract()
-        index = spx_index()
-        spxw_cont = spxw_opt()
         self.reqCurrentTime()
-        self.reqSecDefOptParams(self.nextValidOrderId, "SPX", "", "IND", 416904)
-        self.reqContractDetails(self.nextValidOrderId, spxw_cont)
+#        self.reqSecDefOptParams(self.nextValidOrderId, "AAPL", "", "STK", 265598)
+
+        contract = Contract()
+        contract.symbol = "AAPL"
+        contract.secType = "OPT"
+        contract.exchange = "CBOE"
+        contract.underlyingConId = 265598
+        contract.tradingClass = "AAPL"
+        contract.multiplier = 100
+        contract.right = "PUT"
+        contract.lastTradeDateOrContractMonth = "20230818"
+        self.reqContractDetails(self.nextValidOrderId, contract)
 
     def stop(self):
         self.done = True
