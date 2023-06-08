@@ -3,12 +3,13 @@
 import json
 import requests
 import argparse
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
 args = parser.parse_args()
 
-local_ip = "192.168.1.167:5000"
+local_ip = "127.0.0.1:5000"
 base_url = f"https://{local_ip}/v1/api"
 headers = {
         "User-Agent": "python-requests/2.28.1",
@@ -19,6 +20,17 @@ headers = {
         }
 
 # /iserver/accounts should be queried
+# A
+
+def stocksBySymbol(symbol):
+    endpoint = base_url + f"/trsrv/stocks"
+    data = {
+            "symbols": symbol
+            }
+    response = requests.get(endpoint, params=data, verify=False, headers=headers)
+    jsonData = json.loads(response.text)
+    return jsonData
+
 def snapShotDataSubscribe(conIds: str, fields: str):
     endpoint = base_url + "/iserver/marketdata/snapshot"
     conIds = conIds.split(',')
@@ -88,7 +100,7 @@ def callPortfolioAccounts():
 def checkAuthStatus():
     resp = requests.get(base_url + "/iserver/auth/status", verify=False)
     jsonData = json.loads(resp.text)
-    print(jsonData)
+    return jsonData
 
 def accountTrades():
     resp = requests.get(base_url + "/iserver/account/trades", verify=False,
@@ -114,19 +126,12 @@ def placeOrder(accId: str, orderDict: dict):
     resp = requests.post(base_url + endpoint, verify=False, json=data,
             headers=headers)
     jsonData = json.loads(resp.text)
-    print(jsonData)
-    messages = {}
-    if type(jsonData) == dict and "error" in jsonData.keys():
-        print("ERROR: ", jsonData['error'])
-        messages['error'] = jsonData['error']
 
-    else:
-        for el in jsonData:
-            if "id" in el.keys():
-                if el['id'] not in messages.keys():
-                    messages['id'] = el['id']
-                    messages['message'] = el['message']
-    return messages                
+    for el in jsonData:
+        if "id" in el.keys():
+            jsonData = orderReply(el['id'])
+
+    return jsonData 
 
 
 def getContractRules(conID):
@@ -156,16 +161,33 @@ def getSecDefPerConId(conids: list):
     jsonData = json.loads(respose.text)['secdef']
     return jsonData
 
-def createOrderPayload(accId: str, conId: int, orderType: str, exchange: str,
+def createLimitOrderPayload(accId: str, conId: int, orderType: str, exchange: str,
         orth, price: int, action, symbol, quantity, tif):
     data = { 
             "acctId": accId,
             "conid": conId,
-            "secType": f"secType = {conId}:FUT",
-            "orderType": orderType,
+            "secType": f"secType = {conId}:STK",
+            "orderType": "LMT",
             "listingExchange": exchange,
             "outsideRTH": orth,
             "price": price,
+            "side": action,
+            "ticker": symbol,
+            "quantity": quantity,
+            "tif": tif
+            }
+
+    return data
+
+def createMarketOrderPayload(accId: str, conId: int, exchange: str,
+        orth, action, symbol, quantity, tif):
+    data = { 
+            "acctId": accId,
+            "conid": conId,
+            "secType": f"secType = {conId}:STK",
+            "orderType": "MKT",
+            "listingExchange": exchange,
+            "outsideRTH": orth,
             "side": action,
             "ticker": symbol,
             "quantity": quantity,
@@ -196,18 +218,15 @@ def orderReply(replyID):
     endpoint = base_url + f"/iserver/reply/{replyID}"
     data = {'confirmed': True}
     response = requests.post(endpoint, verify=False, json=data, headers=headers)
-    print("REPLY endpoint: ", response.text)
+    print(f"REPLY to {replyID}: ", response.text)
     jsonData = json.loads(response.text)
-    print(jsonData)
     for e in jsonData:
         if type(e) is dict:
             if 'id' in e.keys():
                 orderReply(e['id'])
             else:
-                print(e)
+                print("JSON: ", jsonData, e)
                 return jsonData
-
-        print("TYPE: ",type(e))
 
 def getOrderStatus(orderId):
     endpoint = base_url + f"/iserver/account/order/status/{orderId}"
@@ -260,24 +279,40 @@ def getPortfolioPositions(accId):
         raise RuntimeError("")
 
 
-def placeSingleOrder(symbol):
+def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, price=None):
     contract = searchBySymbol(symbol, "STK")
     print(contract)
     accId = getAccounts()[0]
-    orderPayload = createOrderPayload(
-            accId = accId,
-            conId=int(contract['conid']),
-            orderType="LMT",
-            exchange="SMART",
-            orth=False,
-            price=1,
-            action="BUY",
-            symbol=contract['symbol'],
-            quantity=1,
-            tif="DAY"
-            )
-    resp = placeOrder(accId, orderPayload)
-    print("Response from order placement: ", resp)
+    if orderType == "LMT":
+        orderPayload = createLimitOrderPayload(
+                accId = accId,
+                conId=int(contract['conid']),
+                exchange=exchange,
+                orth=orth,
+                price=price if price is not None else 0,
+                action=action,
+                symbol=contract['symbol'],
+                quantity=quantity,
+                tif=tif
+                )
+    if orderType == "MKT":
+        orderPayload = createMarketOrderPayload(
+                accId = accId,
+                conId=int(contract['conid']),
+                exchange=exchange,
+                orth=orth,
+                action=action,
+                symbol=contract['symbol'],
+                quantity=quantity,
+                tif=tif
+                )
+    message = placeOrder(accId, orderPayload)
+    if "id" in message.keys():
+        replyId = message['id']
+        # orderReply function implements recursive call so
+        # all queries have relevant reply.
+        orderData = orderReply(replyId)
+
 
 
 def placesFutOrders(symbol):
@@ -306,12 +341,14 @@ def placesFutOrders(symbol):
     payloads = createMutliplePayloads(accountId, conDefList)
     for p in payloads:
         messages = placeOrder(accountId, p)
-        if "id" in messages.keys():
+#        if "id" in messages.keys():
+        while "id" in messages.keys():
             replyId = messages['id']
             orderData = orderReply(replyId)
+            messages = orderData
             print('ORDER data: ', orderData)#
 
-        elif "error" in messages.keys():
+        if "error" in messages.keys():
             print(messages['error'])
 
 
@@ -357,13 +394,17 @@ def cancelAllOrders():
 
 def main():
     checkAuthStatus()
-    accId = getAccounts()[0]
-    placeSingleOrder("BMW")
-    orders = getLiveOrders()
-    for orderId in orders:
-        getOrderStatus(orderId)
-    invalidatePositions(accId)        
-    getPortfolioPositionsByPage(accId, 1)
+    accountID = getAccounts()[0]
+    print(stocksBySymbol("AAPL"))
+    contractId = stocksBySymbol("BMW")['BMW'][0]['contracts'][0]['conid']
+    print(contractId)
+    payload = createMarketOrderPayload(accId=accountID, conId=contractId, exchange="SMART",
+            orth=False, action="BUY", symbol="BMW", quantity=1, tif="DAY")
+    response = placeOrder(accountID, payload)
+    # need to implement order reply logic into placeOrder function
+    print(response)
+    # Make it return 500 or 503 on order confirmation
+#    placeSingleOrder(symbol="BMW", exchange="SMART", orderType="MKT", action="BUY", tif="DAY", orth=False, quantity=700)
 
 if __name__ == "__main__":
     if args.address == None:
