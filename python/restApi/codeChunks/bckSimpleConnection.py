@@ -36,12 +36,38 @@ async def sendMessages(msgList):
     messages = msgList 
 
     async with websockets.connect("wss://" + local_ip + "/v1/api/ws", ssl=ssl_context) as websocket:
+        await consumer_handler(websocket)
 
         consumer_task = asyncio.create_task(consumer_handler(websocket))
         producer_task = asyncio.create_task(producer_handler(websocket))
 
         await asyncio.gather(consumer_task, producer_task)
 
+        while True:
+            if len(messages) != 0:
+                currentMsg = messages.pop(0)
+                await asyncio.sleep(1)
+                await websocket.send(currentMsg)
+
+            rst = await websocket.recv()
+            jsonData = json.loads(rst.decode())
+
+            if 'topic' in jsonData.keys():
+
+                if jsonData['topic'] == "sts":
+                    print(f"Session info: \n{jsonData['args']}")
+
+                if jsonData['topic'] == "act":
+                    print(f"User data: \n{jsonData['args']}")
+
+                if jsonData['topic'] == "system": 
+                    # Keep session alive 
+                    messages.append('tic')
+
+            if 'error' in jsonData.keys():
+                print(jsonData['error'])
+            
+            print(jsonData)
 
 async def consumer(message):
     print("Consumer hadler: ", message)
@@ -52,23 +78,14 @@ async def consumer_handler(websocket):
 
 async def producer_handler(websocket):
     while True:
-        print("Triggered")
-        msg = await produce_message()
-        if len(msg) > 0:
-            msg = msg.pop(0)
-        await websocket.send(msg)
+        markeDataMsg = subscribeMarketData("265598", "31,83")
+        await websocket.send(markeDataMsg)
         await asyncio.sleep(1)
-messages = [subscribeMarketData("265598", "31,83")]
-async def produce_message():
-    if len(messages) != 0:
-        message = messages.pop(0)
-        return message
 
 def main():
     msgList = []  
 #    timePassed()
-#    asyncio.get_event_loop().run_until_complete(sendMessages(""))
-    asyncio.run(sendMessages(msgList))
+    asyncio.get_event_loop().run_until_complete(sendMessages(""))
 
 if __name__ == "__main__":
     main()
