@@ -1,4 +1,3 @@
-
 #! /usr/bin/env python3
 
 import logging
@@ -11,6 +10,7 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
+from contracts import CustomContracts
 
 
 class TestApp(EWrapper, EClient):
@@ -37,9 +37,34 @@ class TestApp(EWrapper, EClient):
         self.start()
         print(f"Next valid order ID: {orderId}")
 
+    def tickPrice(self, reqId, tickType, price: float,
+                  attrib):
+        super().tickPrice(reqId, tickType, price, attrib)
+        print("TickPrice. TickerId:", reqId, "tickType:", tickType,
+              "Price:", floatMaxString(price), "CanAutoExecute:", attrib.canAutoExecute)
+
+    def tickSize(self, reqId, tickType, size):
+        super().tickSize(reqId, tickType, size)
+        print("TickSize. TickerId:", reqId, "TickType:", tickType, "Size: ", decimalMaxString(size))
+
+    def tickGeneric(self, reqId, tickType, value: float):
+        super().tickGeneric(reqId, tickType, value)
+        print("TickGeneric. TickerId:", reqId, "TickType:", tickType, "Value:", floatMaxString(value))
+
+    def tickString(self, reqId, tickType, value: str):
+        super().tickString(reqId, tickType, value)
+        print("TickString. TickerId:", reqId, "Type:", tickType, "Value:", value)
+
+    def tickSnapshotEnd(self, reqId: int):
+        super().tickSnapshotEnd(reqId)
+        print("TickSnapshotEnd. TickerId:", reqId)
+
     def start(self):
+        customContracts = CustomContracts()
+        contract = customContracts.bagContract()
+        
         self.reqContractDetails(self.nextValidOrderId, contract)
-        self.placeOrder(self.nextValidOrderId, contract, order)
+        self.reqMktData(self.nextValidOrderId, contract, '', False, False, [])
 
     def stop(self):
         self.done = True
@@ -48,7 +73,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
@@ -58,34 +83,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    def tickPrice(self, reqId: TickerId, tickType: TickType, price: float,
-                  attrib: TickAttrib):
-        super().tickPrice(reqId, tickType, price, attrib)
-        print("TickPrice. TickerId:", reqId, "tickType:", tickType,
-              "Price:", floatMaxString(price), "CanAutoExecute:", attrib.canAutoExecute,
-              "PastLimit:", attrib.pastLimit, end=' ')
-        if tickType == TickTypeEnum.BID or tickType == TickTypeEnum.ASK:
-            print("PreOpen:", attrib.preOpen)
-        else:
-            print()
-    # ! [tickprice]
-
-    @iswrapper
-    # ! [ticksize]
-    def tickSize(self, reqId: TickerId, tickType: TickType, size: Decimal):
-        super().tickSize(reqId, tickType, size)
-        print("TickSize. TickerId:", reqId, "TickType:", tickType, "Size: ", decimalMaxString(size))
-    # ! [ticksize]
-
-    @iswrapper
-    # ! [tickgeneric]
-    def tickGeneric(self, reqId: TickerId, tickType: TickType, value: float):
-        super().tickGeneric(reqId, tickType, value)
-        print("TickGeneric. TickerId:", reqId, "TickType:", tickType, "Value:", floatMaxString(value))
-    # ! [tickgeneric]
-
-    @iswrapper
-    # ! [tickstring]
-    def tickString(self, reqId: TickerId, tickType: TickType, value: str):
-        super().tickString(reqId, tickType, value)
-        print("TickString. TickerId:", reqId, "Type:", tickType, "Value:", value)

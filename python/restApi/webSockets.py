@@ -8,7 +8,7 @@ import websockets
 
 ssl_context = ssl._create_unverified_context()
 
-local_ip = "192.168.43.222:5000"
+local_ip = "127.0.0.1:5000"
 base_url = f"https://{local_ip}/v1/api"
 
 #Historical data payload:
@@ -52,7 +52,7 @@ def searchBySymbol(symbol: str, sectype: str):
         conid = jsonData[0]['conid']
         return conid
     else:
-        raise RuntimeError(f"Nothing found for symbol {symbol}")
+        raise RuntimeError(f"Nothing found for symbol {symbol} because of response status code: {resp.status_code}")
 
 def getContractDetails(conId):
     endpoint = f"/iserver/contract/{conId}/info"
@@ -91,15 +91,22 @@ def create_SOR_req():
     msg = "sor+{}"
     return msg
 
+def create_STR_req():
+    msg = 'str+{"realtimeUpdatesOnly": true}'
+    return
+
+def
+
 def unsubscibeHistoricalData(serverID):
     msg = "umh+" + serverID 
     return msg
 
 def createRequests(conId):
-    smd_req = create_SMD_req(conId, "31, 84, 86")
-    smh_req = create_SMH_req(conId, "1d", "1hour", "trades", "%o/%c/%h/%l") 
+#    smd_req = create_SMD_req(conId, "31, 84, 86")
+#    smh_req = create_SMH_req(conId, "1d", "1hour", "trades", "%o/%c/%h/%l") 
     sor_req = create_SOR_req()
-    mktDpthReq = marketDepthRequest(conId) 
+    str_req = create_STR_req()
+#    mktDpthReq = marketDepthRequest(conId) 
     msgList = [smd_req, sor_req, smh_req, mktDpthReq]
 
     return msgList

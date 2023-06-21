@@ -11,7 +11,7 @@ from ibapi.order import Order
 from ibapi.contract import Contract
 from datetime import datetime
 from threading import Thread
-from contracts import contracts 
+from contracts import CustomContracts 
 
 
 class TestApp(EWrapper, EClient):
@@ -30,11 +30,11 @@ class TestApp(EWrapper, EClient):
 
     def historicalData(self, reqId, bar):
         super().historicalData(reqId, bar)
-        print("Historical data: ", reqId, bar)
+        print("Historical data: ", reqId, bar.open, bar.volume)
     
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
-        print("contract details: ", reqId, contractDetails)
+        print("contract details: ", reqId, contractDetails.minTick)
 
     # Provides next valid identifier needed to place an order
     # Indicates that the connection has been established and other messages can be sent from
@@ -74,21 +74,22 @@ class TestApp(EWrapper, EClient):
         # TWS will retunr data only for instrument's timezone or 
         # for time zone that is configured as local in TWS settings.
         timezone = "US/Eastern"
-        querytime = f"20230127 15:00:00 {timezone}"
-
-        contract = contracts.forex_pair()
+        querytime = f"202300518 13:00:00 {timezone}"
+        contracts = CustomContracts()
+        contract = contracts.audUSDcontract()
         print(self.clientId)
         self.reqContractDetails(self.nextValidOrderId, contract)
-        startDate = f"20230308 10:30:00 {timezone}"
-        endDate = f'20230418 16:30:00 {timezone}'
-        endDate = "20230418 16:30:00"
+#        startDate = f"20230308 10:30:00 {timezone}"
+#        endDate = f'20230418 16:30:00 {timezone}'
+#        endDate = "20230418 16:30:00"
+        endDate = ""
         self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
                 1)
 
 #        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, "",
 #                10, "TRADES", 1, True, [])
-#        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-#                '1 W', '1 hour', 'TRADES', 0, 1, False, [])
+        self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
+                '1 M', '1 hour', 'BID_ASK', 0, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):
@@ -117,7 +118,7 @@ def threadedExecution():
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         app.run()

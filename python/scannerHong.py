@@ -57,7 +57,7 @@ class TestApp(EWrapper, EClient):
         
         self.reqScannerParameters()
         scanner = ScannerSubscription()
-        scanner.scanCode = "HIGH_VS_52W_HL"
+        scanner.scanCode = "MOST_ACTIVE_AVG_USD"
         scanner.instrument = "STK"
         scanner.locationCode = "STK.US.MAJOR" 
 
@@ -75,7 +75,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
