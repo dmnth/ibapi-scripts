@@ -4,10 +4,14 @@ import json
 import requests
 import argparse
 import time
+import urllib
+from time import sleep
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
 args = parser.parse_args()
+
+requests.packages.urllib3.disable_warnings()
 
 local_ip = "127.0.0.1:5000"
 base_url = f"https://{local_ip}/v1/api"
@@ -126,6 +130,7 @@ def placeOrder(accId: str, orderDict: dict):
     resp = requests.post(base_url + endpoint, verify=False, json=data,
             headers=headers)
     jsonData = json.loads(resp.text)
+    print(jsonData)
 
     for el in jsonData:
         if "id" in el.keys():
@@ -161,7 +166,7 @@ def getSecDefPerConId(conids: list):
     jsonData = json.loads(respose.text)['secdef']
     return jsonData
 
-def createLimitOrderPayload(accId: str, conId: int, orderType: str, exchange: str,
+def createLimitOrderPayload(accId: str, conId: int, exchange: str,
         orth, price: int, action, symbol, quantity, tif):
     data = { 
             "acctId": accId,
@@ -199,10 +204,9 @@ def createMarketOrderPayload(accId: str, conId: int, exchange: str,
 def createMutliplePayloads(accId, conDefList):
     payloads = []
     for con in conDefList:
-        payload = createOrderPayload(
+        payload = createLimitOrderPayload(
                 accId=accId,
                 conId=con['conid'],
-                orderType="LMT",
                 exchange=con['listingExchange'],
                 orth=False,
                 price=1,
@@ -325,10 +329,9 @@ def placesFutOrders(symbol):
     accountId = getAccounts()[0]
     print("Current accountID: ", accountId)
     print("Current contract: ", curCon) 
-    singlePayload = createOrderPayload(
+    singlePayload = createLimitOrderPayload(
             accId=accountId,
             conId=curCon['conid'],
-            orderType="LMT",
             exchange=curCon['listingExchange'],
             orth=False,
             price=4430,
@@ -341,15 +344,8 @@ def placesFutOrders(symbol):
     payloads = createMutliplePayloads(accountId, conDefList)
     for p in payloads:
         messages = placeOrder(accountId, p)
-#        if "id" in messages.keys():
-        while "id" in messages.keys():
-            replyId = messages['id']
-            orderData = orderReply(replyId)
-            messages = orderData
-            print('ORDER data: ', orderData)#
+        print(messages)
 
-        if "error" in messages.keys():
-            print(messages['error'])
 
 
 def getLiveOrders():
@@ -378,31 +374,36 @@ def searchBySymbol(symbol: str, sectype: str):
 
 def cancelOrder(accountID, orderID):
     endpoint = f'/iserver/account/{accountID}/order/{orderID}'
+    print(orderID)
+    if type(orderID) == list:
+        orderID = ','.join(str(i) for i in orderID)
+        orderID = f'[{orderID}]'
+        print("ORDER LIST TO CANCEL: ", orderID)
     data = {"accountId": accountID, "orderId": orderID}
-    print(data)
     resp = requests.delete(base_url + endpoint, params=data, verify=False, headers=headers)
-    print(resp.text)
+    print("Cancel order response: ", resp.text)
 
 def cancelAllOrders():
     # to cancel all orders send -1 as ID value
     orderIds = getLiveOrders()
     accId = getAccounts()[0]
-    cancelOrder(accId, orderIds[0])
-    while len(orderIds) != 0:
-        toCancelId = orderIds.pop(0)
-        cancelOrder(accId, toCancelId)
+    cancelOrder(accId, orderIds)
+
+#    while len(orderIds) != 0:
+#        toCancelId = orderIds.pop(0)
+#        cancelOrder(accId, toCancelId)
 
 def main():
     checkAuthStatus()
-    accountID = getAccounts()[0]
-    print(stocksBySymbol("AAPL"))
-    contractId = stocksBySymbol("BMW")['BMW'][0]['contracts'][0]['conid']
-    print(contractId)
-    payload = createMarketOrderPayload(accId=accountID, conId=contractId, exchange="SMART",
-            orth=False, action="BUY", symbol="BMW", quantity=1, tif="DAY")
-    response = placeOrder(accountID, payload)
+    placesFutOrders("BMW")
+#    print(getLiveOrders())
+    cancelAllOrders()
+    while True:
+        print(getLiveOrders())
+        sleep(1)
+#    response = placeOrder(accountID, payload)
     # need to implement order reply logic into placeOrder function
-    print(response)
+#    print(response)
     # Make it return 500 or 503 on order confirmation
 #    placeSingleOrder(symbol="BMW", exchange="SMART", orderType="MKT", action="BUY", tif="DAY", orth=False, quantity=700)
 
