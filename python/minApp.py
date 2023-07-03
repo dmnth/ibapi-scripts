@@ -67,7 +67,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 7496, clientId=0)
+        app.connect('192.168.43.222', 4002, clientId=0)
         app.run()
     except Exception as err:
         print(err)

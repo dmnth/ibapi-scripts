@@ -63,7 +63,7 @@ class TestApp(EWrapper, EClient):
         customContracts = CustomContracts()
         contract = customContracts.bagContract()
         
-        self.reqContractDetails(self.nextValidOrderId, contract)
+#        self.reqContractDetails(self.nextValidOrderId, contract)
         self.reqMktData(self.nextValidOrderId, contract, '', False, False, [])
 
     def stop(self):

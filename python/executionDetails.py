@@ -5,6 +5,7 @@ import datetime
 from threading import Timer
 import ibapi
 import time
+import datetime
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.order import Order
@@ -80,6 +81,13 @@ class TestApp(EWrapper, EClient):
 
         self.placeOrder(self.nextValidOrderId, contract, order)
         time.sleep(1)
+        execFilter = ExecutionFilter()
+        today = datetime.today()
+        weekDay = today.weekday()
+        start = datetime.timedelta(days=weekday, weeks=1)
+        weekStart = today - start
+        print(weekStart)
+        execFilter.time = "20230610-09:00:00" 
         self.placeOrder(self.nextValidOrderId+1, contract, order)
         self.reqExecutions(self.nextValidOrderId, ExecutionFilter())
         self.reqMktData(self.nextValidOrderId, contract, "", False, False, []) 

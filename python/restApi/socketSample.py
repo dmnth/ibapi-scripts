@@ -8,7 +8,7 @@ import websocket
 import json
 import time
 
-localIP = "192.168.0.211"
+localIP = "127.0.0.1"
 BASE_URL = f"{localIP}:5000/v1/api"
 
 
@@ -19,7 +19,7 @@ class WebsocketClient(websocket.WebSocket):
 
     def connect(self, session_id: str, ssl_options: dict = None):
         self.ws = websocket.create_connection(self.websocket_url, sslopt=ssl_options)
-        self.ws.send(f'{{"session": "{session_id}"}}')
+#        self.ws.send(f'{{"session": "{session_id}"}}')
         return self
     
     def recv(self):
@@ -127,6 +127,7 @@ def processMsg(websocket, msg, mktDpthResponse=None):
 # One request at a time can be processed because websockets are meant to be async
 def main():
     session_id = request_session_id()
+    session_id = 0
     websocket = get_websocket_client(session_id)
     histReq = historicalDataRequest("265598", "1d", "1hour", "trades", "%o/%c/%h/%l") 
     mktDpthMsg = marketDepthRequest("265598")
@@ -134,6 +135,7 @@ def main():
             mktDpthMsg['subscribe'],
             histReq,
     ]
+    messages = []
     message_queue = queue.Queue()
     for message in messages:
         message_queue.put(message)

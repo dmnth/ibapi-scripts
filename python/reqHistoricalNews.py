@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import logging
 import datetime
 import threading
@@ -61,8 +63,8 @@ class TestApp(EWrapper, EClient):
     def start(self):
         print('@###################################')
 
-     #   self.reqHistoricalNews(10003, 3691937, "BZ", "2023-02-15 00:00:00", "2023-02-16 00:00:00", 300, [])
-        self.reqNewsArticle(self.nextValidOrderId, "BZ", "BZ$1387d258", [])
+        self.reqHistoricalNews(10003, 3691937, "BZ", "2023-02-15 00:00:00", "2023-02-16 00:00:00", 300, [])
+     #   self.reqNewsArticle(self.nextValidOrderId, "BZ", "BZ$1387d258", [])
 
 
 

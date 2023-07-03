@@ -30,11 +30,11 @@ class TestApp(EWrapper, EClient):
 
     def historicalData(self, reqId, bar):
         super().historicalData(reqId, bar)
-        print("Historical data: ", reqId, bar.open, bar.volume)
+        print("Historical data: ", reqId, bar) 
     
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
-        print("contract details: ", reqId, contractDetails.minTick)
+        print("contract details: ", reqId, contractDetails)
 
     # Provides next valid identifier needed to place an order
     # Indicates that the connection has been established and other messages can be sent from
@@ -74,22 +74,22 @@ class TestApp(EWrapper, EClient):
         # TWS will retunr data only for instrument's timezone or 
         # for time zone that is configured as local in TWS settings.
         timezone = "US/Eastern"
-        querytime = f"202300518 13:00:00 {timezone}"
+        querytime = f"20230518 15:00:00 {timezone}"
         contracts = CustomContracts()
-        contract = contracts.audUSDcontract()
+        contract = contracts.tsla_contract()
         print(self.clientId)
         self.reqContractDetails(self.nextValidOrderId, contract)
 #        startDate = f"20230308 10:30:00 {timezone}"
 #        endDate = f'20230418 16:30:00 {timezone}'
 #        endDate = "20230418 16:30:00"
         endDate = ""
-        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "TRADES", True,
+        self.reqHeadTimeStamp(self.nextValidOrderId, contract, "BID_ASK", True,
                 1)
 
 #        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, "",
 #                10, "TRADES", 1, True, [])
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '1 M', '1 hour', 'BID_ASK', 0, 1, False, [])
+                '905 S', '5 secs', 'TRADES', 0, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):

@@ -10,8 +10,11 @@ from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from ibapi.tag_value import TagValue
 from stopLimitOrder import stopLimitOrder
 from conditionalOrder import conditionalBracketOrder
+from contracts import CustomContracts
+
 
 def bmwContract():
 
@@ -82,6 +85,19 @@ def aaplContract():
 
     return contract
 
+def alkemContract():
+
+    contract = Contract()
+
+    contract.conId = 628565593
+    contract.symbol = "ALKEM"
+    contract.lastTradeDateOrContractMonth = "20230727"
+    contract.multiplier = '1'
+    contract.exchange = "NSE"
+    contract.currency = "INR"
+    contract.localSymbol = "ALKEM23JULFUT"
+
+    return contract
 
 
 class TestApp(EWrapper, EClient):
@@ -104,6 +120,10 @@ class TestApp(EWrapper, EClient):
         self.nextValidOrderId = orderId
         self.start()
         print(f"Next valid order ID: {orderId}")
+
+    def contractDetails(self, reqId, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        print("contract details: ", reqId, contractDetails)
 
     def openOrder(self, orderId, contract, order: Order,
                   orderState):
@@ -134,17 +154,27 @@ class TestApp(EWrapper, EClient):
         print("OpenOrderEnd")
 
     def start(self):
+        contracts = CustomContracts()
 
-        contract = Contract()
-        contract.symbol = "AAPL"
-        contract.secType = "STK"
-        contract.exchange = "SMART"
-        contract.currency = "USD"
+#        contract = Contract()
+#        contract.symbol = "AAPL"
+#        contract.secType = "STK"
+#        contract.exchange = "SMART"
+#        contract.currency = "USD"
 
-        order = conditionalBracketOrder(self.nextValidOrderId)
+        myContract = contracts.espContract()
+
+        order = Order()
+        order.orderType = "MKT"
+        order.action = "SELL"
+        order.totalQuantity = 200 
+
         print(order)
+        print(myContract)
 
-        self.placeOrder(self.nextValidOrderId, contract, order)
+        self.reqContractDetails(self.nextValidOrderId, myContract)
+
+        self.placeOrder(self.nextValidOrderId, myContract, order)
 
     def stop(self):
         self.done = True
@@ -153,7 +183,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 4002, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()

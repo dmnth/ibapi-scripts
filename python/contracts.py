@@ -1,10 +1,85 @@
 #! /usr/bin/env python3
 
+from ibapi.contract import Contract
+from ibapi.contract import ComboLeg
+
 
 class CustomContracts():
 
     def __init__(self):
         self.args = ""
+
+    def espContract(self):
+
+        contract = Contract()
+
+        contract.symbol = "ES"
+        contract.secType = "FUT"
+        contract.lastTradeDateOrContractMonth = "20230915"
+        contract.exchange = "QBALGO"
+        contract.currency = "USD"
+        contract.multiplier = 50
+        contract.localSymbol = "ESU3"
+
+        return contract
+
+    def audUSDcontract(self):
+        
+        contract = Contract()
+
+        contract.symbol = "AUD"
+        contract.secType = "CASH"
+        contract.currency = "USD"
+        contract.exchange = "IDEALPRO"
+
+        return contract
+
+    def bagContract(self):
+
+        contract = Contract()
+
+        contract.symbol = "SPX"
+        contract.secType = "BAG"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        leg1 = ComboLeg()
+        leg1.conId =634358014 
+        leg1.ratio = 1
+        leg1.side = 2
+
+        leg2 = ComboLeg()
+        leg2.conId = 635133675 
+        leg2.ratio = 2
+        leg2.side = 1
+
+        contract.comboLegs = []
+        contract.comboLegs.append(leg1)
+        contract.comboLegs.append(leg2)
+
+        return contract
+
+    def mbcnContract(self):
+
+        contract = Contract()
+        contract.symbol = "MBCN"
+        contract.secType = "STK"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        return contract
+
+    def metContract(self):
+        contract = Contract()
+        contract.conId = 570162771
+        contract.symbol = "METM3"
+        contract.exchange = "CME"
+        contract.secType = "FUT"
+        contract.lastTradeDateOrContractMonth = "20230623"
+        contract.multiplier = 0.1
+
+
+        return contract
 
     def xauusd_contract(self):
 
@@ -148,6 +223,13 @@ class CustomContracts():
         contract.secType = "CONTFUT"
 
         return contract
+
+    def comboContract(self):
+
+        contract = Contract()
+
+
+
 
 if __name__ == "__main__":
     contracts = CustomContracts()
