@@ -1,0 +1,33 @@
+#####################################################
+
+Test that executions are being returned:
+
+1. If Trades windows in TWS is closed
+2. If Trades window in TWS is active
+3. If Show Trades for was unchanged
+4. If Show Trades for has been altered
+5. If order type affects result of execution
+6. If ExecutionEnd endpoint is triggered when order type is BAG and order
+  was placed the day before
+7. On what occasion ExecutionEnd endpoint is not being triggered
+8. If executionFilter somehow affect the output 
+
+Placing new orders and further execution of those orders affects reqExecutions() 
+
+Expected behavior: code hangs, execDetailsEnd() never triggered
+
+1. Place new orders, check if they got executed via TWS
+2. Call reqExecutions() from separate script
+
+
+New plan:
+
+1. Place orders
+2. Call reqExecutions()
+3. Place more orders after the executions to check if the code is unresponsive.
+
+Above results in all executions returned according to Show Trades for field in 
+Classic TWS
+
+reqExecutions() will only return executions if orders were placed during the execution of the 
+script?

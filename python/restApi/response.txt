@@ -1,0 +1,4 @@
+Namespace(address='0')
+{'AAPL': [{'name': 'APPLE INC', 'chineseName': '&#x82F9;&#x679C;&#x516C;&#x53F8;', 'assetClass': 'STK', 'contracts': [{'conid': 265598, 'exchange': 'NASDAQ', 'isUS': True}, {'conid': 38708077, 'exchange': 'MEXI', 'isUS': False}, {'conid': 273982664, 'exchange': 'EBS', 'isUS': False}]}, {'name': 'LS 1X AAPL', 'chineseName': None, 'assetClass': 'STK', 'contracts': [{'conid': 493546048, 'exchange': 'LSEETF', 'isUS': False}]}, {'name': 'APPLE INC-CDR', 'chineseName': '&#x82F9;&#x679C;&#x516C;&#x53F8;', 'assetClass': 'STK', 'contracts': [{'conid': 532640894, 'exchange': 'AEQLIT', 'isUS': False}]}]}
+14094
+{'acctId': 'DU6036902', 'conid': 14094, 'secType': 'secType = 14094:STK', 'orderType': 'MKT', 'listingExchange': 'SMART', 'outsideRTH': False, 'side': 'BUY', 'ticker': 'BMW', 'quantity': 1, 'tif': 'DAY'}

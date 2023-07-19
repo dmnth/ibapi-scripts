@@ -5,6 +5,7 @@ import logging
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.contract import Contract
+from contracts import CustomContracts
 
 
 class TestApp(EWrapper, EClient):
@@ -16,7 +17,7 @@ class TestApp(EWrapper, EClient):
     # WRAPPERS HERE
 
     def error(self, reqId: int, errorCode: int, errorString: str,
-            advansedOrderreject):
+            advansedOrderreject=""):
         super().error(reqId, errorCode, errorString, advansedOrderreject)
         error_message = f'Error id: {reqId}, Error code: {errorCode}, ' \
                         + f'Msg: {errorString}'
@@ -46,9 +47,19 @@ class TestApp(EWrapper, EClient):
         contract.currency = "EUR"
         contract.secType = "STK"
 
+        forexContract = Contract()
+        contract.conId = 12087792
+        contract.exchange = "IDEALPRO"
+        contract.symbol = "EUR"
+        contract.currency = "USD"
+
+        cts = CustomContracts()
+
+        contract = cts.hkStockIndex()
+
         endDate = '20220127-13:00:00' 
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '1 W', '1 hour', 'ADJUSTED_LAST', 0, 1, False, [])
+                '1 W', '1 hour', 'BID', 0, 1, False, [])
 
     def stop(self):
         self.done = True
@@ -57,7 +68,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 4002, clientId=0)
+        app.connect('192.168.43.222', 7497, clientId=1)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()

@@ -1,0 +1,1 @@
+curl -v --insecure https://localhost:5000/v1/api/iserver/account/DU6036902/orders -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"orders":[{"acctId": "DU6036902", "conid": 14094, "secType": "secType = 14094:STK", "orderType": "MKT", "listingExchange": "SMART", "outsideRTH": false, "side": "BUY", "ticker": "BMW", "quantity": 1, "tif": "DAY"}]}'

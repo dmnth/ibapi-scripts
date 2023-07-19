@@ -35,6 +35,12 @@ class TestApp(EWrapper, EClient):
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
         print("contract details: ", reqId, contractDetails)
+        print(contractDetails.contract.lastTradeDateOrContractMonth)
+        print(contractDetails.contractMonth)
+        print(contractDetails.priceMagnifier)
+        print(contractDetails.industry)
+        print(contractDetails.underSymbol)
+        print(contractDetails.underConId)
 
     # Provides next valid identifier needed to place an order
     # Indicates that the connection has been established and other messages can be sent from
@@ -76,7 +82,7 @@ class TestApp(EWrapper, EClient):
         timezone = "US/Eastern"
         querytime = f"20230518 15:00:00 {timezone}"
         contracts = CustomContracts()
-        contract = contracts.tsla_contract()
+        contract = contracts.aapl_contract()
         print(self.clientId)
         self.reqContractDetails(self.nextValidOrderId, contract)
 #        startDate = f"20230308 10:30:00 {timezone}"
@@ -89,7 +95,7 @@ class TestApp(EWrapper, EClient):
 #        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, "",
 #                10, "TRADES", 1, True, [])
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '905 S', '5 secs', 'TRADES', 0, 1, False, [])
+                '1 Y', '5 secs', 'TRADES', 0, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):
@@ -118,7 +124,7 @@ def threadedExecution():
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 7496, clientId=0)
+        app.connect('192.168.43.222', 7497, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         app.run()

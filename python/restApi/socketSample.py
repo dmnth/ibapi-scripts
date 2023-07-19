@@ -134,6 +134,7 @@ def main():
     messages = [
             mktDpthMsg['subscribe'],
             histReq,
+            marketDataReq("265598")
     ]
     messages = []
     message_queue = queue.Queue()

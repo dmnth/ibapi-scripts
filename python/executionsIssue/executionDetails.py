@@ -3,17 +3,17 @@
 import logging
 import datetime
 from threading import Timer
-import ibapi
+import ibapiTest
 import time
 import datetime
-from ibapi.wrapper import EWrapper
-from ibapi.client import EClient
-from ibapi.order import Order
-from ibapi.contract import Contract
-from ibapi.utils import decimalMaxString, floatMaxString, intMaxString
-from ibapi.execution import ExecutionFilter, Execution
+from ibapiTest.wrapper import EWrapper
+from ibapiTest.client import EClient
+from ibapiTest.order import Order
+from ibapiTest.contract import Contract
+from ibapiTest.utils import decimalMaxString, floatMaxString, intMaxString
+from ibapiTest.execution import ExecutionFilter, Execution
 
-class TestApp(EWrapper, EClient):
+class ExecutionsDetails(EWrapper, EClient):
 
     def __init__(self):
         EWrapper.__init__(self)
@@ -80,12 +80,12 @@ class TestApp(EWrapper, EClient):
         contract.exchange = "SMART"
 
 #        self.placeOrder(self.nextValidOrderId, contract, order)
-#        time.sleep(1)
+#        time.sleep(1#)
         execFilter = ExecutionFilter()
 #        execFilter.secType = "BAG"
         execFilter.time = "20230701-02:30:00" 
-#        execFilter.secType = "Bag"
-#        self.placeOrder(self.nextValidOrderId+1, contract, order)
+        execFilter.secType = "FUT"
+##        self.placeOrder(self.nextValidOrderId+1, contract, order)
         self.reqExecutions(self.nextValidOrderId, execFilter)
 #        self.reqMktData(self.nextValidOrderId, contract, "", False, False, []) 
 
@@ -95,10 +95,10 @@ class TestApp(EWrapper, EClient):
 
 def main():
     try:
-        app = TestApp()
+        app = ExecutionsDetails()
         app.connect('192.168.43.222', 7497, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
-        print(f'ibapi version: ', ibapi.__version__)
+        print(f'ibapi version: ', ibapiTest.__version__)
 #        Timer(5, app.stop).start()
         app.run()
     except Exception as err:

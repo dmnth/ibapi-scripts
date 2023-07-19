@@ -135,7 +135,7 @@ class TestApp(EWrapper, EClient):
 
     def start(self):
         self.reqCurrentTime()
-#        self.reqSecDefOptParams(self.nextValidOrderId, "AAPL", "", "STK", 265598)
+        self.reqSecDefOptParams(self.nextValidOrderId, "AAPL", "", "STK", 265598)
 
         contract = Contract()
         contract.symbol = "AAPL"

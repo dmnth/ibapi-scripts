@@ -3,17 +3,16 @@
 import logging
 import datetime
 from threading import Timer
-import ibapi
+import ibapiTest
 import time
-from ibapi.wrapper import EWrapper
-from ibapi.client import EClient
-from ibapi.order import Order
-from ibapi.contract import Contract
-from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
-from ibapi.tag_value import TagValue
-from stopLimitOrder import stopLimitOrder
-from conditionalOrder import conditionalBracketOrder
-from contracts import CustomContracts
+from ibapiTest.wrapper import EWrapper
+from ibapiTest.client import EClient
+from ibapiTest.order import Order
+from ibapiTest.contract import Contract
+from ibapiTest.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from ibapiTest.tag_value import TagValue
+from contracts import CustomContracts 
+from ibapiTest.execution import ExecutionFilter
 
 
 def bmwContract():
@@ -100,7 +99,7 @@ def alkemContract():
     return contract
 
 
-class TestApp(EWrapper, EClient):
+class PlaceBagOrders(EWrapper, EClient):
 
     def __init__(self):
         EWrapper.__init__(self)
@@ -128,14 +127,14 @@ class TestApp(EWrapper, EClient):
     def openOrder(self, orderId, contract, order: Order,
                   orderState):
         super().openOrder(orderId, contract, order, orderState)
-        print("OpenOrder. PermId:", intMaxString(order.permId), "ClientId:", intMaxString(order.clientId), " OrderId:", intMaxString(orderId), 
-              "Account:", order.account, "Symbol:", contract.symbol, "SecType:", contract.secType,
-              "Exchange:", contract.exchange, "Action:", order.action, "OrderType:", order.orderType,
-              "TotalQty:", decimalMaxString(order.totalQuantity), "CashQty:", floatMaxString(order.cashQty), 
-              "LmtPrice:", floatMaxString(order.lmtPrice), "AuxPrice:", floatMaxString(order.auxPrice), "Status:", orderState.status,
-              "MinTradeQty:", intMaxString(order.minTradeQty), "MinCompeteSize:", intMaxString(order.minCompeteSize),
-              "competeAgainstBestOffset:", floatMaxString(order.competeAgainstBestOffset),
-              "MidOffsetAtWhole:", floatMaxString(order.midOffsetAtWhole),"MidOffsetAtHalf:" ,floatMaxString(order.midOffsetAtHalf))
+        if orderId is None:
+            print("OpenOrder. PermId:", intMaxString(order.permId), "ClientId:", intMaxString(order.clientId), " OrderId:", intMaxString(orderId), "Account:", order.account, "Symbol:", contract.symbol, "SecType:", contract.secType,
+                  "Exchange:", contract.exchange, "Action:", order.action, "OrderType:", order.orderType,
+                  "TotalQty:", decimalMaxString(order.totalQuantity), "CashQty:", floatMaxString(order.cashQty), 
+                  "LmtPrice:", floatMaxString(order.lmtPrice), "AuxPrice:", floatMaxString(order.auxPrice), "Status:", orderState.status,
+                  "MinTradeQty:", intMaxString(order.minTradeQty), "MinCompeteSize:", intMaxString(order.minCompeteSize),
+                  "competeAgainstBestOffset:", floatMaxString(order.competeAgainstBestOffset),
+                  "MidOffsetAtWhole:", floatMaxString(order.midOffsetAtWhole),"MidOffsetAtHalf:" ,floatMaxString(order.midOffsetAtHalf))
 
     def orderStatus(self, orderId, status: str, filled: Decimal,
                     remaining: Decimal, avgFillPrice: float, permId: int,
@@ -143,11 +142,19 @@ class TestApp(EWrapper, EClient):
                     whyHeld: str, mktCapPrice: float):
         super().orderStatus(orderId, status, filled, remaining,
                             avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice)
-        print("OrderStatus. Id:", orderId, "Status:", status, "Filled:", decimalMaxString(filled),
-              "Remaining:", decimalMaxString(remaining), "AvgFillPrice:", floatMaxString(avgFillPrice),
-              "PermId:", intMaxString(permId), "ParentId:", intMaxString(parentId), "LastFillPrice:",
-              floatMaxString(lastFillPrice), "ClientId:", intMaxString(clientId), "WhyHeld:",
-              whyHeld, "MktCapPrice:", floatMaxString(mktCapPrice))
+        if orderId is None:
+            print("OrderStatus. Id:", orderId, "Status:", status, "Filled:", decimalMaxString(filled),
+                  "Remaining:", decimalMaxString(remaining), "AvgFillPrice:", floatMaxString(avgFillPrice),
+                  "PermId:", intMaxString(permId), "ParentId:", intMaxString(parentId), "LastFillPrice:",
+                  floatMaxString(lastFillPrice), "ClientId:", intMaxString(clientId), "WhyHeld:",
+                  whyHeld, "MktCapPrice:", floatMaxString(mktCapPrice))
+    def execDetails(self, reqId: int, contract: Contract, execution):
+        super().execDetails(reqId, contract, execution)
+        print("ExecDetails. ReqId:", reqId, "Symbol:", contract.symbol, "SecType:", contract.secType, "Currency:", contract.currency, execution)
+
+    def execDetailsEnd(self, reqId: int):
+        super().execDetailsEnd(reqId)
+        print("ExecDetailsEnd. ReqId:", reqId)
 
     def openOrderEnd(self):
         super().openOrderEnd()
@@ -156,13 +163,17 @@ class TestApp(EWrapper, EClient):
     def start(self):
         contracts = CustomContracts()
 
+        execFilter = ExecutionFilter()
+        execFilter.time = "20230717 02:00:00"
+        execFilter.secType = "FUT"
+        self.reqExecutions(self.nextValidOrderId, execFilter) 
+
         goldSpreadContract = contracts.goldSpread()
         silverSpreadContract = contracts.silverSpread()
         copperSpreadContract = contracts.copperSpread()
 
+        myContract = contracts.goldContract()
         contracts = [goldSpreadContract, silverSpreadContract, copperSpreadContract]
-#        myContract = contracts.goldContract()
-
         order = Order()
         order.orderType = "MKT"
         order.action = "BUY"
@@ -172,7 +183,9 @@ class TestApp(EWrapper, EClient):
         orderId = self.nextValidOrderId
         for contract in contracts:
             self.placeOrder(orderId, contract, order)
+            self.placeOrder(orderId+1, myContract, order)
             orderId += 1
+        
 
     def stop(self):
         self.done = True
@@ -180,10 +193,10 @@ class TestApp(EWrapper, EClient):
 
 def main():
     try:
-        app = TestApp()
+        app = PlaceBagOrders()
         app.connect('192.168.43.222', 7497, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
-        print(f'ibapi version: ', ibapi.__version__)
+        print(f'ibapi version: ', ibapiTest.__version__)
 #        Timer(15, app.stop).start()
         app.run()
     except Exception as err:

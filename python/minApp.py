@@ -34,13 +34,11 @@ class TestApp(EWrapper, EClient):
     def historicalTicksBidAsk(self, reqId: int, ticks,
                               done: bool):
         for tick in ticks:
-            self.convert_unix_timestamp(tick.time)
             print("HistoricalTickBidAsk. ReqId:", reqId, tick)
 
     def historicalTicksLast(self, reqId: int, ticks,
                             done: bool):
         for tick in ticks:
-            self.convert_unix_timestamp(tick.time)
             print("HistoricalTickLast. ReqId:", reqId, tick)
 
     def historicalDataEnd(self, reqId, start, end):
@@ -67,7 +65,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 4002, clientId=0)
+        app.connect('192.168.43.223', 7497, clientId=1)
         app.run()
     except Exception as err:
         print(err)

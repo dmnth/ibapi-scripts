@@ -63,7 +63,8 @@ class TestApp(EWrapper, EClient):
 
         tag_values = []
 
-        tag_values.append(TagValue("changePercAbove", '29'))
+#        tag_values.append(TagValue("changePercAbove", '29'))
+        tag_values.append(TagValue("dicks", '29'))
 
         self.reqScannerSubscription(self.nextValidOrderId, scanner, [],
                 tag_values)
@@ -75,7 +76,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 7496, clientId=0)
+        app.connect('192.168.43.222', 7497, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()

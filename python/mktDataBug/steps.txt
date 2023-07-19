@@ -1,0 +1,10 @@
+#################################################
+
+
+1. Connect to TWS
+2. Request mkt data for symbol MSFT
+3. Disconnect
+4. Connect to TWS with different client id
+5. Request mkt data for MSFT
+
+Expected result - no market data should be returned

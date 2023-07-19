@@ -67,7 +67,7 @@ def getContractDetails(conId):
 # Streaming data request, accepts comma-separated values
 def create_SMD_req(conId, args: str):
     args = args.split(',')
-#    msg = "smd+" + conId + '+' + '{"fields":["31","83"]}'
+    msg = "smd+" + conId + '+' + '{"fields":["31","83"]}'
     msg = "smd+" + conId + '+' + json.dumps({"fields":args})
     return msg
 
@@ -95,18 +95,16 @@ def create_STR_req():
     msg = 'str+{"realtimeUpdatesOnly": true}'
     return
 
-def
-
 def unsubscibeHistoricalData(serverID):
     msg = "umh+" + serverID 
     return msg
 
 def createRequests(conId):
-#    smd_req = create_SMD_req(conId, "31, 84, 86")
-#    smh_req = create_SMH_req(conId, "1d", "1hour", "trades", "%o/%c/%h/%l") 
+    smd_req = create_SMD_req(conId, "31, 84, 86")
+    smh_req = create_SMH_req(conId, "1d", "1hour", "trades", "%o/%c/%h/%l") 
     sor_req = create_SOR_req()
     str_req = create_STR_req()
-#    mktDpthReq = marketDepthRequest(conId) 
+    mktDpthReq = marketDepthRequest(conId) 
     msgList = [smd_req, sor_req, smh_req, mktDpthReq]
 
     return msgList

@@ -7,11 +7,12 @@ import json
 import requests
 import websockets
 
-ssl_context = ssl._create_unverified_context()
+#ssl_context = ssl._create_unverified_context()
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 
 "smh+265598+{'exchange': 'ISLAND', 'period': '2h', 'bar': '5 min'"
 
-local_ip = "192.168.1.167:4001"
+local_ip = "127.0.0.1:5000"
 base_url = f"https://{local_ip}/v1/api"
 
 def authorize():
@@ -70,6 +71,5 @@ def streaming_data_operations():
 
 if __name__ == "__main__":
     authorize()
-    whatif()
-    place_simple_order()
+    streaming_data_operations()
 
