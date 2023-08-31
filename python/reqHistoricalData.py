@@ -19,6 +19,7 @@ class TestApp(EWrapper, EClient):
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, self)
+        self.historicalBars = []
 
     # WRAPPERS HERE
 
@@ -30,17 +31,24 @@ class TestApp(EWrapper, EClient):
 
     def historicalData(self, reqId, bar):
         super().historicalData(reqId, bar)
-        print("Historical data: ", reqId, bar) 
+        print("Historical data: ", reqId, bar.date, type(bar)) 
+        self.historicalBars.append(bar)
+
+    def historicalDataEnd(self, reqId, start, end):
+        super().historicalDataEnd(reqId, start, end)
+        if len(self.historicalBars) != 0:
+            print("Writing bars...")
+            with open('datafile.txt', 'w') as file:
+                file.write("DATE  OPEN  HIGH  LOW")
+                for bar in self.historicalBars:
+                    string = f"{bar.date}, {bar.open}, {bar.high}, {bar.low}\n"
+                    file.write(string)
+                file.close()
+        print("Historical data end for: ", self.clientId)
     
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
         print("contract details: ", reqId, contractDetails)
-        print(contractDetails.contract.lastTradeDateOrContractMonth)
-        print(contractDetails.contractMonth)
-        print(contractDetails.priceMagnifier)
-        print(contractDetails.industry)
-        print(contractDetails.underSymbol)
-        print(contractDetails.underConId)
 
     # Provides next valid identifier needed to place an order
     # Indicates that the connection has been established and other messages can be sent from
@@ -72,30 +80,28 @@ class TestApp(EWrapper, EClient):
             self.convert_unix_timestamp(tick.time)
             print("HistoricalTickLast. ReqId:", reqId, tick)
 
-    def historicalDataEnd(self, reqId, start, end):
-        super().historicalDataEnd(reqId, start, end)
-        print("Historical data end for: ", self.clientId)
 
     def start(self):
         # TWS will retunr data only for instrument's timezone or 
         # for time zone that is configured as local in TWS settings.
         timezone = "US/Eastern"
+        timezone = "US/Central"
         querytime = f"20230518 15:00:00 {timezone}"
         contracts = CustomContracts()
-        contract = contracts.aapl_contract()
+        contract = contracts.mesContract()
         print(self.clientId)
         self.reqContractDetails(self.nextValidOrderId, contract)
-#        startDate = f"20230308 10:30:00 {timezone}"
+        startDate = f"20230208 10:30:00 {timezone}"
 #        endDate = f'20230418 16:30:00 {timezone}'
-#        endDate = "20230418 16:30:00"
+#        endDate = f"20230211 16:30:00 {timezone}"
         endDate = ""
         self.reqHeadTimeStamp(self.nextValidOrderId, contract, "BID_ASK", True,
                 1)
 
-#        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, "",
+#        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, endDate,
 #                10, "TRADES", 1, True, [])
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '1 Y', '5 secs', 'TRADES', 0, 1, False, [])
+                '120 D', '1 hour', 'TRADES', 0, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):
@@ -124,7 +130,7 @@ def threadedExecution():
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 7497, clientId=0)
+        app.connect('192.168.1.167', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         app.run()
