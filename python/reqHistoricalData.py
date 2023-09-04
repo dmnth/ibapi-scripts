@@ -39,12 +39,14 @@ class TestApp(EWrapper, EClient):
         if len(self.historicalBars) != 0:
             print("Writing bars...")
             with open('datafile.txt', 'w') as file:
-                file.write("DATE  OPEN  HIGH  LOW")
+                file.write("DATE      OPEN      HIGH            LOW\n")
                 for bar in self.historicalBars:
                     string = f"{bar.date}, {bar.open}, {bar.high}, {bar.low}\n"
                     file.write(string)
                 file.close()
+                print("Finished writing bars")
         print("Historical data end for: ", self.clientId)
+        self.disconnect()
     
     def contractDetails(self, reqId, contractDetails):
         super().contractDetails(reqId, contractDetails)
@@ -101,7 +103,7 @@ class TestApp(EWrapper, EClient):
 #        self.reqHistoricalTicks(self.nextValidOrderId, contract, startDate, endDate,
 #                10, "TRADES", 1, True, [])
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '120 D', '1 hour', 'TRADES', 0, 1, False, [])
+                '360 D', '1 day', 'TRADES', 1, 1, False, [])
 #        print(self.serverVersion())
 
     def stop(self):
@@ -130,7 +132,7 @@ def threadedExecution():
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
         app.run()
