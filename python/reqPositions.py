@@ -5,11 +5,13 @@ import datetime
 from threading import Timer
 import ibapi
 import time
+import csv
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.order import Order
 from ibapi.contract import Contract
 from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from datetime import datetime
 
 class TestApp(EWrapper, EClient):
 
@@ -17,6 +19,7 @@ class TestApp(EWrapper, EClient):
         EWrapper.__init__(self)
         EClient.__init__(self, self)
         self.account = "DU6036902"
+        self.positions = []
 
     # WRAPPERS HERE
 
@@ -39,25 +42,28 @@ class TestApp(EWrapper, EClient):
     def position(self, account: str, contract: Contract, position: Decimal,
                  avgCost: float):
         super().position(account, contract, position, avgCost)
-        if contract.exchange == '':
-
-            new_contract = Contract()
-            new_contract.symbol = contract.symbol
-            new_contract.secId = contract.secId
-            new_contract.secType = contract.secType
-            new_contract.conId = contract.conId
-            new_contract.multiplier = contract.multiplier
-            new_contract.lastTradeDateOrContractMonth = \
-            contract.lastTradeDateOrContractMonth
-
-
-            self.reqContractDetails(self.nextValidOrderId, contract)
-
-            print(contract.symbol)
+        print(account, contract.symbol, contract.secType, contract.currency, position, avgCost)
+        timeStamp = datetime.now()
+        string = [f"[{timeStamp}] -- {account},{contract.symbol},{contract.secType},{contract.currency}," +\
+                f"{position},{avgCost}"]
+#        if string not in self.position:
+        self.positions.append(string)
 
     def positionEnd(self):
         super().positionEnd()
         print("PositionEnd")
+        if len(self.positions) != 0:
+            print("Writing positions...")
+            with open('positionsTest.csv', 'a', newline='') as csvfile:
+                writer = csv.writer(csvfile, quotechar='|')
+                writer.writerow(["##########BEGIN#########\n"])
+                writer.writerows(self.positions)
+                writer.writerow(["##########FIN#########\n"])
+                print("Finished writing positions")
+        print("Positions data end for: ", self.clientId)
+        time.sleep(10)
+        self.reqPositions()
+#        self.disconnect()
 
     def contractDetails(self, reqId: int, contractDetails):
         super().contractDetails(reqId, contractDetails)
@@ -108,12 +114,9 @@ class TestApp(EWrapper, EClient):
         order.action = "SELL"
         order.orderType = "MKT"
         order.totalQuantity = 1
-
-
-
         self.reqPositions()
+
         self.reqAccountUpdates(True, self.account)
-        self.placeOrder(self.nextValidOrderId, contract, order)
 
     def stop(self):
         self.done = True
@@ -122,7 +125,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.1.167', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
