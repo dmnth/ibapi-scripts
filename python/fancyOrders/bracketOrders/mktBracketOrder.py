@@ -72,6 +72,10 @@ class TestApp(EWrapper, EClient):
         contract.symbol = "BMW"
         contract.currency = "EUR"
         contract.secType = "STK"
+        # In order not to trigger the error caused by linking
+        # modified brackets to the executed order we are using
+        # a new instance of an order class that does not have 
+        # parent order included.
         modOrder = stopProfit(parentOrderId=orderID,
                                      action="BUY",
                                      quantity=4,
