@@ -5,7 +5,7 @@ public class closePositionsTest extends DefaultEWrapper {
 
 	private EReaderSignal readerSignal;
 	private EClientSocket clientSocket;
-	protected int currentOrderId = -1;
+	protected int currentOrderId = 13;
 	
 	public closePositionsTest() {
 		readerSignal = new EJavaSignal();
@@ -19,10 +19,15 @@ public class closePositionsTest extends DefaultEWrapper {
 	public EReaderSignal getSignal() {
 		return readerSignal;
 	}
-	
+
 	public int getCurrentOrderId() {
 		return currentOrderId;
 	}	
+
+    public void incrementCurrentOrderId(int orderId) {
+      orderId++;
+      currentOrderId = orderId;
+    }
 
 	public static void main(String[] args) throws InterruptedException {
 		closePositionsTest wrapper = new closePositionsTest();
@@ -66,6 +71,11 @@ public class closePositionsTest extends DefaultEWrapper {
 	public void currentTime(long time) {
 		System.out.println(EWrapperMsgGenerator.currentTime(time));
 	}
+    @Override
+    public void nextValidId(int orderId) {
+		System.out.println("OrderID: " + orderId);
+        this.currentOrderId = orderId;
+	}
 	
 	@Override
 	public void error(int id, int errorCode, String errorMsg, String advancedOrderRejectJson) {
@@ -77,7 +87,24 @@ public class closePositionsTest extends DefaultEWrapper {
 	}
 	@Override
 	public void position(String account, Contract contract, Decimal pos, double avgCost) {
-		System.out.println(EWrapperMsgGenerator.position(account, contract, pos, avgCost));
+        System.out.println(contract);
+        boolean posIsZero = pos.isZero();
+        int position = Integer.parseInt(pos.toString());
+        System.out.println(position);
+        if (!posIsZero && avgCost>0) {
+          Order order = new Order();
+          if (position > 0) {
+            order.action("SELL");
+          } 
+          if (position < 0) {
+            order.action("BUY");
+          }
+          order.orderType("MKT");
+          order.totalQuantity(pos);
+          int orderId = this.getCurrentOrderId();
+          this.incrementCurrentOrderId(orderId);
+          this.getClient().placeOrder(orderId, contract, order);
+        }
 	}
 	
 	@Override
