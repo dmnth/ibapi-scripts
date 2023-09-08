@@ -5,7 +5,6 @@ from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.contract import (Contract, ContractDetails)
 from ibapi.account_summary_tags import *
-from flask import Flask
 from sqlalchemy import create_engine, text 
 
 class dB():
@@ -17,16 +16,18 @@ class dB():
         self.engine = create_engine("sqlite:///myDb.db:", echo=True)
         
     def createAcccountsTable(self):
-        sqlStatement = text("CREATE TABLE IF NOT EXISTS Accounts (AccountId varchar(255), Value int, Currency varchar(255));")
+        sqlStatement = text("CREATE TABLE IF NOT EXISTS Accounts (AccountId varchar(255) PRIMARY KEY, Value int, Currency varchar(255));")
         conn = self.engine.connect()
         conn.execute(sqlStatement)
         conn.commit()
         conn.close()
     
     def insertAccountData(self, accid, val, curr):
-        sql = text(f"INSERT INTO Accounts (AccountId, Value, Currency) VALUES ('{accid}', {val}, '{curr}');")
+        sqlInsert = text(f"INSERT OR IGNORE INTO Accounts (AccountId, Value, Currency) VALUES ('{accid}', {val}, '{curr}');")
+        sqlUpdate = text(f"UPDATE Accounts SET value = {val}")
         conn = self.engine.connect()
-        conn.execute(sql)
+        conn.execute(sqlInsert)
+        conn.execute(sqlUpdate)
         conn.commit()
         conn.close()
     
