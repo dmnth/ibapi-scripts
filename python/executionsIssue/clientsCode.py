@@ -21,6 +21,6 @@ class TestApp(EClient, EWrapper):
         print("ExecDetailsEnd", " ", reqId)
 
 app = TestApp()
-app.connect("192.168.43.222", 7497, 1007)
+app.connect("192.168.43.222", 4002, 1007)
 app.run()
 

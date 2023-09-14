@@ -85,7 +85,7 @@ class ExecutionsDetails(EWrapper, EClient):
 #        execFilter.secType = "BAG"
         execFilter.time = "20230701-02:30:00" 
         execFilter.secType = "FUT"
-##        self.placeOrder(self.nextValidOrderId+1, contract, order)
+#        self.placeOrder(self.nextValidOrderId+1, contract, order)
         self.reqExecutions(self.nextValidOrderId, execFilter)
 #        self.reqMktData(self.nextValidOrderId, contract, "", False, False, []) 
 
@@ -96,7 +96,7 @@ class ExecutionsDetails(EWrapper, EClient):
 def main():
     try:
         app = ExecutionsDetails()
-        app.connect('192.168.43.222', 7497, clientId=0)
+        app.connect('192.168.43.222', 4002, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapiTest.__version__)
 #        Timer(5, app.stop).start()

@@ -15,90 +15,6 @@ from contracts import CustomContracts
 from ibapiTest.execution import ExecutionFilter
 
 
-def bmwContract():
-
-    
-    contract = Contract()
-    contract.symbol = "BMW"
-    contract.secType = "STK"
-    contract.currency = "EUR"
-    contract.exchange = "SMART"
-    contract.primaryExchange = "IBIS"
-
-    return contract
-
-def conidContract():
-
-    contract = Contract()
-
-    contract.conId = 549590944 
-    contract.exchange = "COMEX"
-    contract.currency = "USD"
-    contract.secType = "FOP"
-    contract.symbol = "GC"
-
-    return contract
-
-def qqqContract():
-
-    contract = Contract()
-    contract.symbol = "QQQ"
-    contract.exchange = "SMART"
-    contract.primaryExchange = "NASDAQ"
-    contract.currency = "USD"
-    contract.tradingClass = "NMS"
-    contract.localSymbol = "QQQ"
-    contract.secType = "STK"
-
-    return contract
-
-def goodAfterTimeOrder():
-
-    order = Order()
-    order.action = "BUY" 
-    order.orderType = "MKT"
-    order.totalQuantity = 1 
-    order.goodAfterTime = "20230501 14:00:00 Europe/Moscow"
-
-    return order
-
-def sellLimitOrder():
-
-    order = Order()
-    order.action = "SELL"
-    order.orderType = "LMT"
-    order.lmtPrice = "105.5"
-    order.tif = "DAY"
-    order.totalQuantity = 1
-    order.transmit = True 
-
-    return order
-
-def aaplContract():
-
-    contract = Contract()
-    contract.symbol = "AAPL"
-    contract.exchange = "SMART"
-    contract.currency = "USD"
-    contract.secType = "STK"
-
-    return contract
-
-def alkemContract():
-
-    contract = Contract()
-
-    contract.conId = 628565593
-    contract.symbol = "ALKEM"
-    contract.lastTradeDateOrContractMonth = "20230727"
-    contract.multiplier = '1'
-    contract.exchange = "NSE"
-    contract.currency = "INR"
-    contract.localSymbol = "ALKEM23JULFUT"
-
-    return contract
-
-
 class PlaceBagOrders(EWrapper, EClient):
 
     def __init__(self):
@@ -164,28 +80,24 @@ class PlaceBagOrders(EWrapper, EClient):
         contracts = CustomContracts()
 
         execFilter = ExecutionFilter()
-        execFilter.time = "20230717 02:00:00"
-        execFilter.secType = "FUT"
+        execFilter.secType = "BAG"
         self.reqExecutions(self.nextValidOrderId, execFilter) 
 
         goldSpreadContract = contracts.goldSpread()
         silverSpreadContract = contracts.silverSpread()
         copperSpreadContract = contracts.copperSpread()
 
-        myContract = contracts.goldContract()
         contracts = [goldSpreadContract, silverSpreadContract, copperSpreadContract]
         order = Order()
         order.orderType = "MKT"
-        order.action = "BUY"
+        order.action = 'BUY'
         order.totalQuantity = 1
 
-#        self.reqContractDetails(self.nextValidOrderId, myContract)
         orderId = self.nextValidOrderId
-        for contract in contracts:
-            self.placeOrder(orderId, contract, order)
-            self.placeOrder(orderId+1, myContract, order)
-            orderId += 1
-        
+#        for contract in contracts[:2]:
+#            self.placeOrder(orderId, contract, order)
+#            orderId += 1
+#        
 
     def stop(self):
         self.done = True
@@ -194,7 +106,7 @@ class PlaceBagOrders(EWrapper, EClient):
 def main():
     try:
         app = PlaceBagOrders()
-        app.connect('192.168.43.222', 7497, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapiTest.__version__)
 #        Timer(15, app.stop).start()
