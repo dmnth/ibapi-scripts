@@ -1,0 +1,137 @@
+#################################################################
+
+    All below cases were executed when trade history already
+    had multiple BAG orders per last week. Client has mentioned
+    that the issue is only present when the BAG orders were placed
+    in the previous 24 hours.
+
+    Closed all position - will need a full paper account reset.
+
+    Since request after 16:00 will be processed on the next day-
+    will try later.
+
+#################################################################
+
+
+Case 1.
+
+TWS - stable (10.19)
+Trades history window closed
+execFilter.secType = "BAG"
+
+Result: No results returned 
+
+Case 2.
+
+TWS - stable (10.19)
+Trade history window opened with Show trades for 7 days set
+execFilter = "FUT"
+
+Result: Executions are returned as excpected
+
+Case 3. 
+
+TWS - stable (10.19)
+Trade history window opened with Show trades for 7 days set
+execFilter = "BAG"
+
+Result: Executions are returned as expected
+
+Case 4.
+
+TWS -stable (10.19)
+Trade history window closed
+execFilter = "FUT"
+
+Result: No results returned
+
+case 4.
+
+TWS -stable (10.19)
+Trade history window closed
+execFilter = ""
+
+Result: No results returned
+
+case 5.
+
+TWS -stable (10.19)
+Trade history window opened with executions for last 7 days 
+execFilter = ""
+
+Result: Executions are returned as expectedo
+
+### ! On version 10.19+ executions callback is working as expected, execDetailsEnd is triggered in all cases.
+
+Case 1.
+
+TWS - latest (10.25.1h)
+Trades history window closed
+execFilter.secType = "BAG"
+
+Result: No results returned 
+
+Case 2.
+
+TWS - latest (10.25.1h)
+Trade history window opened with Show trades for 7 days set
+execFilter = "BAG"
+
+Result: Executions are returned as excpected
+
+Case 3. 
+
+TWS - latest (10.25.1h)
+Trade history window opened with Show trades for 7 days set
+execFilter = "FUT"
+
+Result: Executions are returned as expected
+
+Case 4.
+
+TWS -latest (10.25.1h)
+Trade history window closed
+execFilter = "FUT"
+
+Result: No results returned
+
+case 4.
+
+TWS -latest (10.25.1h)
+Trade history window closed
+execFilter = ""
+
+Result: No results returned
+
+case 5.
+
+TWS -latest (10.25.1h)
+Trade history window opened with executions for last 7 days 
+execFilter = ""
+
+Result: Executions are returned as expectedo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

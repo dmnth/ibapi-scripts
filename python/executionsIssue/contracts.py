@@ -90,3 +90,29 @@ class CustomContracts():
 
         return contract
 
+    def bmwSpread(self):
+
+        contract = Contract()
+
+        contract.symbol = "BMW"
+        contract.secType = "BAG"
+        contract.currency = "EUR"
+        contract.exchange = "SMART"
+
+        leg1 = ComboLeg()
+        leg1.conId = 586729910 
+        leg1.ratio = 1
+        leg1.action = "BUY"
+        leg1.exchange = "EUREX"
+
+        leg2 = ComboLeg()
+        leg2.conId = 593441567 
+        leg2.ratio = 1
+        leg2.action = "BUY"
+        leg2.exchange = "EUREX"
+
+        contract.comboLegs = []
+        contract.comboLegs.append(leg1)
+        contract.comboLegs.append(leg2)
+
+        return contract

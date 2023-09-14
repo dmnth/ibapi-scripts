@@ -81,22 +81,23 @@ class PlaceBagOrders(EWrapper, EClient):
 
         execFilter = ExecutionFilter()
         execFilter.secType = "BAG"
-        self.reqExecutions(self.nextValidOrderId, execFilter) 
+#        self.reqExecutions(self.nextValidOrderId, execFilter) 
 
-        goldSpreadContract = contracts.goldSpread()
-        silverSpreadContract = contracts.silverSpread()
-        copperSpreadContract = contracts.copperSpread()
+#        goldSpreadContract = contracts.goldSpread()
+#        silverSpreadContract = contracts.silverSpread()
+#        copperSpreadContract = contracts.copperSpread()
+        gopnikSpread = contracts.bmwSpread()
 
-        contracts = [goldSpreadContract, silverSpreadContract, copperSpreadContract]
+#        contracts = [goldSpreadContract, silverSpreadContract, copperSpreadContract]
         order = Order()
         order.orderType = "MKT"
-        order.action = 'BUY'
-        order.totalQuantity = 1
+        order.action = 'SELL'
+        order.totalQuantity = 100 
 
         orderId = self.nextValidOrderId
-#        for contract in contracts[:2]:
-#            self.placeOrder(orderId, contract, order)
-#            orderId += 1
+        for i in range(3):
+            self.placeOrder(orderId, gopnikSpread, order)
+            orderId += 1
 #        
 
     def stop(self):
@@ -106,7 +107,7 @@ class PlaceBagOrders(EWrapper, EClient):
 def main():
     try:
         app = PlaceBagOrders()
-        app.connect('192.168.43.222', 7496, clientId=0)
+        app.connect('127.0.0.1', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapiTest.__version__)
 #        Timer(15, app.stop).start()
