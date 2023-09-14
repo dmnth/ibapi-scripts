@@ -6,6 +6,7 @@ import argparse
 import time
 import urllib
 from time import sleep
+from orderPayloads import Samples 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
@@ -103,7 +104,12 @@ def callPortfolioAccounts():
 
 def checkAuthStatus():
     resp = requests.get(base_url + "/iserver/auth/status", verify=False)
-    jsonData = json.loads(resp.text)
+    if resp.status_code != 200:
+        print(resp.status_code, "--> Something wen wrong")
+        if resp.status_code == 401:
+            raise Exception("Unauthorized, please login via web interface")
+    else:
+        jsonData = json.loads(resp.text)
     return jsonData
 
 def accountTrades():
@@ -119,6 +125,7 @@ def checkTypes(jsonData):
             if type(k) == bytes or type(v) == bytes:
                 print(f"some exception occured - {type(k)}: {type(v)}")
     print("Done comparing")
+
     
 def placeOrder(accId: str, orderDict: dict):
     endpoint = f'/iserver/account/{accId}/orders'
@@ -130,10 +137,10 @@ def placeOrder(accId: str, orderDict: dict):
     resp = requests.post(base_url + endpoint, verify=False, json=data,
             headers=headers)
     jsonData = json.loads(resp.text)
-    print(jsonData)
-
     for el in jsonData:
-        if "id" in el.keys():
+        if 'error' in el:
+            print(jsonData['error'])
+        if type(el) == dict and "id" in el.keys():
             jsonData = orderReply(el['id'])
 
     return jsonData 
@@ -395,9 +402,13 @@ def cancelAllOrders():
 
 def main():
     checkAuthStatus()
-    placesFutOrders("BMW")
+    accountId = getAccounts()[0]
+    payload = Samples.applMktOrder(accountId)
+    print(payload)
+    resp = placeOrder(accountId, payload)
+#    placesFutOrders("BMW")
 #    print(getLiveOrders())
-    cancelAllOrders()
+#    cancelAllOrders()
     while True:
         print(getLiveOrders())
         sleep(1)
