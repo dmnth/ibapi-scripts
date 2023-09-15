@@ -13,6 +13,34 @@ from ibapiTest.utils import decimalMaxString, floatMaxString, intMaxString, Deci
 from ibapiTest.tag_value import TagValue
 from contracts import CustomContracts 
 from ibapiTest.execution import ExecutionFilter
+from ibapi.contract import ComboLeg
+
+def silverSpread():
+
+    contract = Contract()
+
+    contract.symbol = "SI"
+    contract.secType = "BAG"
+    contract.currency = "USD"
+    contract.exchange = "COMEX"
+
+    leg1 = ComboLeg()
+    leg1.conId = 645364413 
+    leg1.ratio = 1
+    leg1.action = "BUY"
+    leg1.exchange = "COMEX"
+
+    leg2 = ComboLeg()
+    leg2.conId = 651096968 
+    leg2.ratio = 1
+    leg2.action = "BUY"
+    leg2.exchange = "COMEX"
+
+    contract.comboLegs = []
+    contract.comboLegs.append(leg1)
+    contract.comboLegs.append(leg2)
+
+    return contract
 
 
 class PlaceBagOrders(EWrapper, EClient):
@@ -76,29 +104,33 @@ class PlaceBagOrders(EWrapper, EClient):
         super().openOrderEnd()
         print("OpenOrderEnd")
 
+
+    def placeSpread(self):
+
+        silverSpreadContract = silverSpread() 
+
+        order = Order()
+        order.orderType = "MKT"
+        order.action = 'BUY'
+        order.totalQuantity = 1 
+
+        orderId = self.nextValidOrderId 
+
+        self.placeOrder(orderId, silverSpreadContract, order)
+
     def start(self):
-        contracts = CustomContracts()
+
+#        self.placeSpread()
+
+#        time.sleep(5)
 
         execFilter = ExecutionFilter()
         execFilter.secType = "BAG"
-#        self.reqExecutions(self.nextValidOrderId, execFilter) 
+        # Adjust the time if required or comment it out
+        execFilter.time = "20230915 11:25:00"
+        self.reqExecutions(self.nextValidOrderId, execFilter) 
 
-#        goldSpreadContract = contracts.goldSpread()
-#        silverSpreadContract = contracts.silverSpread()
-#        copperSpreadContract = contracts.copperSpread()
-        gopnikSpread = contracts.bmwSpread()
-
-#        contracts = [goldSpreadContract, silverSpreadContract, copperSpreadContract]
-        order = Order()
-        order.orderType = "MKT"
-        order.action = 'SELL'
-        order.totalQuantity = 100 
-
-        orderId = self.nextValidOrderId
-        for i in range(3):
-            self.placeOrder(orderId, gopnikSpread, order)
-            orderId += 1
-#        
+        
 
     def stop(self):
         self.done = True
