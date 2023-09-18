@@ -1,3 +1,12 @@
+# TODO:
+
+Recursive historical data calls increment +n days of data on every
+callback trigger -> write results to file 
+
+Delimeter each 40 days with new reqId or append a notifier before 
+new batch of data
+
+
 C# Sample interface:
                               O        H       L
 
