@@ -6,6 +6,11 @@ callback trigger -> write results to file
 Delimeter each 40 days with new reqId or append a notifier before 
 new batch of data
 
+Correct data returns with endDate specified.
+
+More tests to be done in order to determine occasions when 
+data is returned incorrectly.
+
 
 C# Sample interface:
                               O        H       L
