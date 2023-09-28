@@ -7,6 +7,7 @@ import time
 import urllib
 from time import sleep
 from orderPayloads import Samples 
+from betaPayloads import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
@@ -400,23 +401,57 @@ def cancelAllOrders():
 #        toCancelId = orderIds.pop(0)
 #        cancelOrder(accId, toCancelId)
 
+def betaHistoricalDataQuery(conid, period, bar, outsideRTH, barType):
+
+    endpoint = base_url + "/hmds/history"
+
+    url = "https://localhost:5000/v1/api/hmds/history?conid=265598&period=w&bar=d&outsideRth=false" 
+
+    payloads = [payloadErr, payloadEmpty, payloadInvalid, payloadInvalid2, payloadInvalid3, 
+            payloadInvalid4, payload2]
+
+    for p in payloads:
+        response = requests.get(endpoint, params=p, verify=False)
+        print("Payload: ",  p , "\n" + "Response: " + response.text + "\n")
+
+def betaSnaphsotQuery():
+
+    endpoint = base_url + "/md/snapshot"
+    fields = "31,70,6509"
+
+    testPatloadi0 = { 
+            "conids": "14094@EUREX:CS",
+            "fields": fields
+            }
+    testPatloadi1 = {
+            "conids": "14094@EUREX:CS,265598@SMART:CS",
+            "fields": fields
+            }
+
+    testPatload2 = {
+            "conids": "265598",
+            "fields": fields
+            }
+
+    response0 = requests.get(endpoint, params=testPatloadi0, verify=False)
+    response1 = requests.get(endpoint, params=testPatloadi1, verify=False)
+    response2 = requests.get(endpoint, params=testPatload2, verify=False)
+    print(f"beta snapshot 0: ", response0.status_code)
+    print(f"beta snapshot content: ", response0.text)
+    print("\n")
+    print(f"beta snapshoti 1: ", response1.status_code)
+    print(f"beta snapshot content 1: ", response1.text)
+    print("\n")
+    print(f"beta snapshot 2: ", response2.status_code)
+    print(f"beta snapshot content 2: ", response2.text)
+
+
 def main():
     checkAuthStatus()
     accountId = getAccounts()[0]
     payload = Samples.applMktOrder(accountId)
-    print(payload)
-    resp = placeOrder(accountId, payload)
-#    placesFutOrders("BMW")
-#    print(getLiveOrders())
-#    cancelAllOrders()
-    while True:
-        print(getLiveOrders())
-        sleep(1)
-#    response = placeOrder(accountID, payload)
-    # need to implement order reply logic into placeOrder function
-#    print(response)
-    # Make it return 500 or 503 on order confirmation
-#    placeSingleOrder(symbol="BMW", exchange="SMART", orderType="MKT", action="BUY", tif="DAY", orth=False, quantity=700)
+    betaHistoricalDataQuery(1, 1, 1, 1, 1)
+#    betaSnaphsotQuery()
 
 if __name__ == "__main__":
     if args.address == None:
