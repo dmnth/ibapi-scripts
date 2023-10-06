@@ -354,8 +354,6 @@ def placesFutOrders(symbol):
         messages = placeOrder(accountId, p)
         print(messages)
 
-
-
 def getLiveOrders():
     endpoint = base_url + "/iserver/account/orders"
     response = requests.get(endpoint, verify=False, headers=headers)
@@ -407,8 +405,13 @@ def betaHistoricalDataQuery(conid, period, bar, outsideRTH, barType):
 
     url = "https://localhost:5000/v1/api/hmds/history?conid=265598&period=w&bar=d&outsideRth=false" 
 
-    payloads = [payloadErr, payloadEmpty, payloadInvalid, payloadInvalid2, payloadInvalid3, 
-            payloadInvalid4, payload2]
+    payloads = [validPayload, payloadErr, payloadEmpty, payloadInvalid, payloadInvalid2, payloadInvalid3, 
+            payloadInvalid4, payload2, payload3, payload4, payload5,
+            payload6, payload7, payload8, payload9, payload10,
+            payload11, validPayload, validPayload2, validPayload2,
+            validPayload3, 
+            validPayload4, validPayload5, 
+            validPayload5, validPayload6]
 
     for p in payloads:
         response = requests.get(endpoint, params=p, verify=False)
@@ -445,13 +448,45 @@ def betaSnaphsotQuery():
     print(f"beta snapshot 2: ", response2.status_code)
     print(f"beta snapshot content 2: ", response2.text)
 
+def scannerRun(instr: str, tp: str, location: str, fltr: list):
+
+    endpoint = base_url + "/iserver/scanner/run"
+
+    payload = {
+            "instrument": instr,
+            "type": tp,
+            "location": location,
+            "filter": fltr
+            }
+
+    response = requests.post(endpoint, json=payload, verify=False)
+
+    print(response.status_code)
+    print(response.text)
+
 
 def main():
     checkAuthStatus()
     accountId = getAccounts()[0]
-    payload = Samples.applMktOrder(accountId)
-    betaHistoricalDataQuery(1, 1, 1, 1, 1)
-#    betaSnaphsotQuery()
+    fltrList = [
+            {
+                "code": "volumeAbove",
+                "value": 1 
+                },
+            {
+                "code": "feeRateAbove",
+                "value": 1
+                },
+            {
+                "code": "hasOptionsIs",
+                "value": 1 
+                },
+            {
+                "code": "usdVolume",
+                "value": 50000000000 
+                }
+            ]
+    scannerRun("STK", "TOP_PERC_GAIN", "STK.US.MAJOR", fltrList)
 
 if __name__ == "__main__":
     if args.address == None:

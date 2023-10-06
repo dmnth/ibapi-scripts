@@ -1,0 +1,15 @@
+#################################################################
+
+Response is out of date for positions endpoint
+
+1. Execute a trade (buy QQQ shares)
+2. Call order/status endpoint until confirmation received
+3. Without delay call positions/invalidate endpoint
+4. Without delay call portfolio/positions endpoint
+5. Check response from step 4 - does it include the shares purchased in step #1?
+If not - repeat steps #1 - #4 until it does. 
+
+Response will not be up to date and accurately reflect the portfolio positions
+until 3-4 minutes after the trade completed.
+
+#################################################################

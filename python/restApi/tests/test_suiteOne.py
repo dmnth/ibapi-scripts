@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 from restRequests import *
-from restRequests import stocksBySymbol
 
 def testConnection():
     conn = checkAuthStatus()
@@ -19,3 +18,4 @@ def testOrderPlacement():
             orth=False, action="BUY", symbol=symbol, quantity=1, tif="DAY")
     response = placeOrder(accountID, payload)
     assert 'order_status' in response[0].keys()
+

@@ -79,7 +79,7 @@ class ExecutionsDetails(EWrapper, EClient):
         contract.currency = "USD"
         contract.exchange = "SMART"
 
-#        self.placeOrder(self.nextValidOrderId, contract, order)
+        self.placeOrder(self.nextValidOrderId, contract, order)
 #        time.sleep(1#)
         execFilter = ExecutionFilter()
 #        execFilter.secType = "BAG"

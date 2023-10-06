@@ -1,0 +1,6 @@
+#########################################
+
+With connectionClosed() callback implemented
+try shutting down TWS - what was the behavior?
+
+

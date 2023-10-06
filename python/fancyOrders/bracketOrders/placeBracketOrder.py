@@ -7,7 +7,7 @@ from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.contract import Contract
 from ibapi.execution import Execution
-from bracketOrder import BracketOrder, stopProfit
+from bracketOrder import bracketOrder, stopProfit
 
 class TestApp(EWrapper, EClient):
 
@@ -52,7 +52,7 @@ class TestApp(EWrapper, EClient):
             self.placeOrder(o.orderId, contract, bo)
 
     def placeBracketOrder(self, orderID, takeProfitPrice, stopLossPrice):
-        bracket_order = BracketOrder(orderID, "BUY", 1,limitPrice=1, takeProfitLimitPrice=takeProfitPrice,
+        bracket_order = bracketOrder(orderID, "BUY", 1,limitPrice=1, takeProfitLimitPrice=takeProfitPrice,
                                      stopLossPrice=stopLossPrice)
         contract = Contract()
         contract.exchange = "SMART"
@@ -64,11 +64,11 @@ class TestApp(EWrapper, EClient):
 
         time.sleep(4)
 #
-        self.modifyBracketOrder(self.nextValidOrderId, 12)
+#        self.modifyBracketOrder(self.nextValidOrderId, 12)
 
     def start(self):
         orderID = self.nextValidOrderId 
-        self.placeBracketOrder(orderID, 103, 80)
+        self.placeBracketOrder(orderID, 102, 83)
 #        orderID += 4 
 #        self.placeBracketOrder(orderID, 103, 80)
 #        orderID += 4 

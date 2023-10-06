@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListOfGroups>
+	<Group>
+		<name>Group_AvailableEquity</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+			<String>DU74650</String>
+		</ListOfAccts>
+		<defaultMethod>AvailableEquity</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+	</Group>
+	<Group>
+		<name>Group_EqualQuantity</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+			<String>DU74650</String>
+		</ListOfAccts>
+		<defaultMethod>Equal</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+		<defaultSize>100</defaultSize>
+	</Group>
+	<Group>
+		<name>Group_NetLiq</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+			<String>DU74650</String>
+		</ListOfAccts>
+		<defaultMethod>NetLiq</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+	</Group>
+	<Group>
+		<name>Group_NetLiquidation</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+			<String>DU74650</String>
+		</ListOfAccts>
+		<defaultMethod>NetLiq</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+		<defaultSize>100</defaultSize>
+	</Group>
+	<Group>
+		<name>Olga</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+		</ListOfAccts>
+		<defaultMethod>NetLiq</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+	</Group>
+	<Group>
+		<name>V2 disappearing group</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+			<String>DU74650</String>
+		</ListOfAccts>
+		<defaultMethod>Equal</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+		<defaultSize>500</defaultSize>
+	</Group>
+	<Group>
+		<name>dasGroup</name>
+		<ListOfAccts varName="list">
+			<String>DU74649</String>
+		</ListOfAccts>
+		<defaultMethod>AvailableEquity</defaultMethod>
+		<linkedHFGroup>false</linkedHFGroup>
+	</Group>
+</ListOfGroups>

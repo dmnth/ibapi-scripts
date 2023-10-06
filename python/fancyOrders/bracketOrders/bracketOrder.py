@@ -2,6 +2,7 @@
 
 from ibapi.order import Order
 from ibapi.utils import Decimal
+from ibapi.tag_value import TagValue
 
 def bracketOrder(parentOrderId:int, action:str, quantity:Decimal,
                  limitPrice:float, takeProfitLimitPrice:float,
@@ -42,6 +43,9 @@ def bracketOrder(parentOrderId:int, action:str, quantity:Decimal,
      #to activate all its predecessors
 #     stopLoss.trailingPercent = 10
 #     stopLoss.percentOffset = 12
+     stopLoss.algoStrategy = "Adaptive" 
+     stopLoss.algoParams = []
+     stopLoss.algoParams.append(TagValue("adaptivePriority", "Patient"))
      stopLoss.transmit = True
 
      bracketOrder = [parent, takeProfit, stopLoss]
@@ -63,8 +67,11 @@ def stopProfit(parentOrderId:int, action:str, quantity:Decimal,
      stopLoss.orderId = parentOrderId + 2
      stopLoss.action = "SELL" if action == "BUY" else "BUY"
      stopLoss.orderType = "STP"
-     stopLoss.auxPrice = stopLossPrice
+     stopLoss.AuxPrice = stopLossPrice
      stopLoss.totalQuantity = quantity
+     stopLoss.algoStrategy = "Adaptive" 
+     stopLoss.algoParams = []
+     stopLoss.algoParams.append(TagValue("adaptivePriority", "Patient"))
      stopLoss.transmit = True
 
      modProfitStop= [takeProfit, stopLoss]

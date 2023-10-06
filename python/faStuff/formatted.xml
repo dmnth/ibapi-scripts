@@ -1,0 +1,1 @@
+<?xml version="1.01" encoding="UTF-8"?><FAGroups><ListOfGroups varName="groups"><Group><name>dasGroup</name><defaultMethod>AvailableEquity</defaultMethod><ListOfAccts varName="list"><Account><acct>DU74649</acct></Account></ListOfAccts><riskCriteria></riskCriteria></Group></ListOfGroups></FAGroups>

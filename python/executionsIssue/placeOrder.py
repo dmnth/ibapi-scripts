@@ -3,16 +3,16 @@
 import logging
 import datetime
 from threading import Timer
-import ibapiTest
+import ibapi
 import time
-from ibapiTest.wrapper import EWrapper
-from ibapiTest.client import EClient
-from ibapiTest.order import Order
-from ibapiTest.contract import Contract
-from ibapiTest.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
-from ibapiTest.tag_value import TagValue
+from ibapi.wrapper import EWrapper
+from ibapi.client import EClient
+from ibapi.order import Order
+from ibapi.contract import Contract
+from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from ibapi.tag_value import TagValue
 from contracts import CustomContracts 
-from ibapiTest.execution import ExecutionFilter
+from ibapi.execution import ExecutionFilter
 from ibapi.contract import ComboLeg
 
 def silverSpread():
@@ -55,7 +55,7 @@ class PlaceBagOrders(EWrapper, EClient):
             advansedOrderreject=""):
         super().error(reqId, errorCode, errorString, advansedOrderreject)
         error_message = f'Error id: {reqId}, Error code: {errorCode}, ' \
-                        + f'Msg: {errorString}'
+                        + f'Msg: {errorString}\n'
 
     def nextValidId(self, orderId):
         #super().nextValidId(orderId)
@@ -94,7 +94,7 @@ class PlaceBagOrders(EWrapper, EClient):
                   whyHeld, "MktCapPrice:", floatMaxString(mktCapPrice))
     def execDetails(self, reqId: int, contract: Contract, execution):
         super().execDetails(reqId, contract, execution)
-        print("ExecDetails. ReqId:", reqId, "Symbol:", contract.symbol, "SecType:", contract.secType, "Currency:", contract.currency, execution)
+        print("ExecDetails. ReqId:", reqId, "Symbol:", contract.symbol, "SecType:", contract.secType, "Currency:", contract.currency, execution, '\n')
 
     def execDetailsEnd(self, reqId: int):
         super().execDetailsEnd(reqId)
@@ -111,24 +111,40 @@ class PlaceBagOrders(EWrapper, EClient):
 
         order = Order()
         order.orderType = "MKT"
-        order.action = 'BUY'
+        order.action = 'SELL'
         order.totalQuantity = 1 
 
         orderId = self.nextValidOrderId 
 
-        self.placeOrder(orderId, silverSpreadContract, order)
+#        self.placeOrder(orderId, silverSpreadContract, order)
 
     def start(self):
 
-#        self.placeSpread()
+        self.placeSpread()
 
-#        time.sleep(5)
+        time.sleep(5)
 
-        execFilter = ExecutionFilter()
-        execFilter.secType = "BAG"
+        execFilterExchange = ExecutionFilter()
+        execFilterLocal = ExecutionFilter()
+        execFilterUTC = ExecutionFilter()
+        execFilterNone = ExecutionFilter()
+
+        execFilterExchange.secType = "BAG"
+        execFilterLocal.secType = "BAG"
+        execFilterUTC.secType = "BAG"
+        execFilterNone.secType = "BAG"
+
         # Adjust the time if required or comment it out
-        execFilter.time = "20230915 11:25:00"
-        self.reqExecutions(self.nextValidOrderId, execFilter) 
+        execFilterExchange.time = "20230915 11:25:00 US/Eastern"
+        execFilterLocal.time = "20230915 11:25:00 Europe/Tallinn"
+        execFilterUTC.time = "20230915-11:25:00"
+        execFilterNone.time = "" 
+
+#        self.reqExecutions(self.nextValidOrderId, execFilterExchange) 
+#        self.reqExecutions(self.nextValidOrderId, execFilterLocal) 
+#        self.reqExecutions(self.nextValidOrderId, execFilterUTC) 
+        self.reqExecutions(self.nextValidOrderId, execFilterNone) 
+
 
         
 
@@ -139,9 +155,9 @@ class PlaceBagOrders(EWrapper, EClient):
 def main():
     try:
         app = PlaceBagOrders()
-        app.connect('127.0.0.1', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
-        print(f'ibapi version: ', ibapiTest.__version__)
+        print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
         app.run()
     except Exception as err:

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListOfGroups>
+	<Group>
+		<name>Profile_ContractsShares</name>
+		<defaultMethod>ContractsOrShares</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+				<amount>1.0</amount>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+				<amount>1.0</amount>
+			</Account>
+		</ListOfAccts>
+	</Group>
+	<Group>
+		<name>Group_AvailableEquity</name>
+		<defaultMethod>AvailableEquity</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+			</Account>
+		</ListOfAccts>
+	</Group>
+	<Group>
+		<name>Group_EqualQuantity</name>
+		<defaultMethod>Equal</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+			</Account>
+		</ListOfAccts>
+		<defaultSize>100</defaultSize>
+	</Group>
+	<Group>
+		<name>Group_NetLiq</name>
+		<defaultMethod>NetLiq</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+			</Account>
+		</ListOfAccts>
+	</Group>
+	<Group>
+		<name>Group_NetLiquidation</name>
+		<defaultMethod>NetLiq</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+			</Account>
+		</ListOfAccts>
+		<defaultSize>100</defaultSize>
+	</Group>
+	<Group>
+		<name>Olga</name>
+		<defaultMethod>NetLiq</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+		</ListOfAccts>
+	</Group>
+	<Group>
+		<name>V2 disappearing group</name>
+		<defaultMethod>Equal</defaultMethod>
+		<ListOfAccts varName="list">
+			<Account>
+				<acct>DU74649</acct>
+			</Account>
+			<Account>
+				<acct>DU74650</acct>
+			</Account>
+		</ListOfAccts>
+		<defaultSize>500</defaultSize>
+	</Group>
+</ListOfGroups>

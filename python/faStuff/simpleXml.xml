@@ -1,0 +1,13 @@
+<?xml version="1.01" encoding="UTF-8"?>
+<ListOfAllocationProfiles>
+  <AllocationProfile>
+    <name>customProfile</name>
+    <type>3</type>
+    <ListOfAllocations varName="listOfAllocations">
+      <Allocation>
+        <acct>U49304934</acct>
+        <amount>1</amount>
+      </Alocation>
+    </ListOfAllocations>
+  <AllocationProfile>
+</ListOfAllocationProfiles>

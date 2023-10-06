@@ -1,18 +1,17 @@
 #! /usr/bin/env python3
 
 import logging
-import datetime
-from threading import Timer
-import ibapiTest
+import ibapi
 import time
-from ibapiTest.wrapper import EWrapper
-from ibapiTest.client import EClient
-from ibapiTest.order import Order
-from ibapiTest.contract import Contract
-from ibapiTest.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
-from ibapiTest.tag_value import TagValue
+from threading import Timer
+from ibapi.wrapper import EWrapper
+from ibapi.client import EClient
+from ibapi.order import Order
+from ibapi.contract import Contract
+from ibapi.utils import decimalMaxString, floatMaxString, intMaxString, Decimal
+from ibapi.tag_value import TagValue
 from contracts import CustomContracts 
-from ibapiTest.execution import ExecutionFilter
+from ibapi.execution import ExecutionFilter
 from ibapi.contract import ComboLeg
 
 def silverSpread():
@@ -113,18 +112,18 @@ class PlaceBagOrders(EWrapper, EClient):
 
         order = Order()
         order.orderType = "MKT"
-        order.action = 'BUY'
+        order.action = 'SELL'
         order.totalQuantity = 1 
 
-        orderId = self.nextValidOrderId 
+        for v in range(13):
+            self.placeOrder(self.nextValidOrderId, silverSpreadContract, order)
+            self.nextValidOrderId += 1
 
-        self.placeOrder(orderId, silverSpreadContract, order)
 
     def start(self):
 
-        self.placeSpread()
-
-        time.sleep(5)
+#        self.placeSpread()
+#        time.sleep(5)
 
         execFilter = ExecutionFilter()
         execFilter.secType = "BAG"
@@ -132,7 +131,6 @@ class PlaceBagOrders(EWrapper, EClient):
         execFilter.time = "20230915 11:25:00"
         self.reqExecutions(self.nextValidOrderId, execFilter) 
 
-        
 
     def stop(self):
         self.done = True
@@ -141,10 +139,10 @@ class PlaceBagOrders(EWrapper, EClient):
 def main():
     try:
         app = PlaceBagOrders()
-        app.connect('127.0.0.1', 7496, clientId=0)
+        app.connect('192.168.43.222', 7496, clientId=0)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
-        print(f'ibapi version: ', ibapiTest.__version__)
-#        Timer(15, app.stop).start()
+        print(f'ibapi version: ', ibapi.__version__)
+        Timer(5, app.stop).start()
         app.run()
     except Exception as err:
         print(err)

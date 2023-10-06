@@ -6,6 +6,7 @@ import json
 import requests
 import websockets
 
+# Uverified context is required in order to ignore certificate check
 ssl_context = ssl._create_unverified_context()
 
 local_ip = "127.0.0.1:5000"
@@ -149,9 +150,6 @@ async def sendMessages(msgList):
 
             if 'error' in jsonData.keys():
                 print(jsonData['error'])
-
-            
-            print(jsonData)
 
 def main():
     conId = searchBySymbol("TSLA", "STK")

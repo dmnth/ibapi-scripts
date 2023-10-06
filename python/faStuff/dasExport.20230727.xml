@@ -1,0 +1,15 @@
+<?xml version=&quot1;.01&quot; encoding=&quot;UTF-8&quot;?>
+<FAGroups>
+	<ListOfGroups varName=&quot;groups&quot;>
+		<Group>
+			<name>dasGroup</name>
+			<defaultMethod>AvailableEquity</defaultMethod>
+			<ListOfAccts varName=&quot;list&quot;>
+				<Account>
+					<acct>DU74649</acct>
+				</Account>
+			</ListOfAccts>
+			<riskCriteria></riskCriteria>
+		</Group>
+	</ListOfGroups>
+</FAGroups>

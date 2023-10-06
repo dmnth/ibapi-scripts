@@ -8,3 +8,9 @@
 5. Request mkt data for MSFT
 
 Expected result - no market data should be returned
+
+Current resolution: cancel market data before disconnecting.
+
+Create two concurrent connections and test them against eachother
+
+

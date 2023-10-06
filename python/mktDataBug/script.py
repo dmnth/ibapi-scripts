@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 import ibapi
+import random
+import time
 from threading import Timer
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
@@ -45,7 +47,7 @@ class TestApp(EWrapper, EClient):
     def start(self):
 
         contract = Contract()
-        contract.symbol = 'AAPL'
+        contract.symbol = 'AMZN'
         contract.exchange = 'SMART'
         contract.currency = 'USD'
         contract.secType = "STK"
@@ -54,19 +56,51 @@ class TestApp(EWrapper, EClient):
         
     def stop(self):
         self.done = True
-        print(f"Cancelling marke data for 12343 {self.clientId}")
-        self.cancelMktData(12343)
-        print("Market data cancelled")
+#        self.cancelMktData(12343)
+        print(f"Disconnecting client id {self.clientId}")
         self.disconnect()
 
 def main():
+    usedCid = []
     try:
+
+
+        print("####################START######################")
+
+        cid = random.randint(0, 1000)
+
         app = TestApp()
-        app.connect('192.168.43.222', 4002, clientId=999)
+        app2 = TestApp()
+        app3 = TestApp()
+        app.connect('192.168.43.222', 4002, clientId=cid)
+        print("\nConnection time: ", app.connTime.decode(), "\n")
         Timer(5, app.stop).start()
         app.run()
+
+        print("\n####################CID########################\n")
+
+        cid += 1
+        print("New cid: ", cid)
+
+        app2.connect('192.168.43.222', 4002, clientId=cid)
+        print("\nConnection time: ", app2.connTime.decode(), "\n")
+        Timer(10, app2.stop).start()
+        app2.run()
+
+        print("\n####################CID II########################\n")
+
+        cid += 1
+        print("New cid: ", cid)
+
+        app3.connect('192.168.43.222', 4002, clientId=cid)
+        print("\nConnection time: ", app3.connTime.decode(), "\n")
+        Timer(15, app3.stop).start()
+        app3.run()
+
+        print("####################END######################")
     except Exception as err:
         print(err)
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
