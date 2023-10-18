@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScannerTemplate autoRefresh="false">
+	<ScannerContent varName="content" version="0" watermarkWhenEmpty="false" tabIndex="-1" restoredFromLayoutLibrary="false" scannerName="Scan (1)" pageId="-1" transferableParameter="true" locationText="STK.US" maxItems="-1" snapshot="1" paused="false" scannerSent="true" chartDividerLocation="0" isFirstInvocation="false" isFilterOpened="false" sortingColId="-1" sortAscending="false" continuousMode="false" readOnly="false">
+		<ExtendedConfigurationMap varName="extendedConfiguration">
+			<String>FXAccount Portfolio Table_Sorting</String>
+			<SortableTableConfiguration column="1" ascending="false"/>
+			<String>FXAccount Portfolio Table</String>
+			<TableConfiguration>
+				<ColumnWidthsMap varName="columnWidths"/>
+				<ColumnOrdinalsMap varName="columnOrdinals"/>
+			</TableConfiguration>
+		</ExtendedConfigurationMap>
+		<PortfolioFilterState varName="filterState" includeZero="true" includeCash="false"/>
+		<Instrument varName="instrument" name="US Stocks" m_type="STK" filters="ABSCHANGEPERC,AFTERHRSCHANGE,AFTERHRSCHANGEPERC,AVGOPTVOLUME,AVGPRICETARGET,AVGRATING,AVGTARGET2PRICERATIO,AVGVOLUME,AVGVOLUME_USD,CHANGEOPENPERC,CHANGEPERC,EMA_20,EMA_50,EMA_100,EMA_200,PRICE_VS_EMA_20,PRICE_VS_EMA_50,PRICE_VS_EMA_100,PRICE_VS_EMA_200,DIVIB,DIVYIELD,DIVYIELDIB,FEERATE,FIRSTTRADEDATE,GROWTHRATE,HALTED,HASOPTIONS,HISTDIVIB,HISTDIVYIELDIB,IMBALANCE,IMBALANCEADVRATIOPERC,IMPVOLAT,IMPVOLATOVERHIST,INSIDEROFFLOATPERC,INSTITUTIONALOFFLOATPERC,MACD,MACD_SIGNAL,MACD_HISTOGRAM,MKTCAP,MKTCAP_USD,NEXTDIVAMOUNT,NEXTDIVDATE,NUMPRICETARGETS,NUMRATINGS,NUMSHARESINSIDER,NUMSHARESINSTITUTIONAL,OPENGAPPERC,OPTVOLUME,OPTVOLUMEPCRATIO,PERATIO,PPO,PPO_SIGNAL,PPO_HISTOGRAM,PRICE,PRICE2BK,PRICE2TANBK,PRICERANGE,PRICE_USD,QUICKRATIO,REBATERATE,REGIMBALANCE,REGIMBALANCEADVRATIOPERC,RETEQUITY,SHORTABLESHARES,SHORTSALERESTRICTED,SIC,ISSUER_COUNTRY_CODE,SOCSACT,SOCSNET,STKTYPE,STVOLUME_3MIN,STVOLUME_5MIN,STVOLUME_10MIN,TRADECOUNT,TRADERATE,UNSHORTABLE,VOLUME,VOLUMERATE,VOLUME_USD,RCGLTCLASS,RCGLTENDDATE,RCGLTIVALUE,RCGLTTRADE,RCGITCLASS,RCGITENDDATE,RCGITIVALUE,RCGITTRADE,RCGSTCLASS,RCGSTENDDATE,RCGSTIVALUE,RCGSTTRADE,ESG_SCORE,ESG_COMBINED_SCORE,ESG_CONTROVERSIES_SCORE,ESG_RESOURCE_USE_SCORE,ESG_EMISSIONS_SCORE,ESG_ENV_INNOVATION_SCORE,ESG_WORKFORCE_SCORE,ESG_HUMAN_RIGHTS_SCORE,ESG_COMMUNITY_SCORE,ESG_PRODUCT_RESPONSIBILITY_SCORE,ESG_MANAGEMENT_SCORE,ESG_SHAREHOLDERS_SCORE,ESG_CSR_STRATEGY_SCORE,ESG_ENV_PILLAR_SCORE,ESG_SOCIAL_PILLAR_SCORE,ESG_CORP_GOV_PILLAR_SCORE,IV_RANK13,IV_RANK26,IV_RANK52,IV_PERCENTILE13,IV_PERCENTILE26,IV_PERCENTILE52,HV_RANK13,HV_RANK26,HV_RANK52,HV_PERCENTILE13,HV_PERCENTILE26,HV_PERCENTILE52,PRICE_2_SALES,EQUITY_PER_SHARE,UTILIZATION,SSCORE,SCHANGE,SVSCORE,SVCHANGE" group="STK.GLOBAL" shortName="US" cloudScanNotSupported="false"/>
+		<ScanType varName="parameter" displayName="Top % Gainers" scanCode="TOP_PERC_GAIN" instruments="STK,STOCK.NA,STOCK.EU,STOCK.ME,STOCK.HK,ETF.EQ.US,ETF.FI.US,IND.US,IND.EU,IND.HK,FUT.US,FUT.NA,FUT.EU,FUT.HK,SSF.US,SSF.NA,SSF.EU,SSF.HK,BOND" absoluteColumns="false" supportsSorting="true" respSizeLimit="#" snapshotSizeLimit="500" delayedAvail="yes" feature="PCT" searchName="% Gainers (High-Low)" searchDefault="false" access="allowed">
+			<Columns varName="columns">
+				<ColumnSetRef colId="0" name="PctPerf" display="false">
+					<displayType>DATA</displayType>
+				</ColumnSetRef>
+				<Column colId="48" name="Time in Scan" display="true">
+					<displayType>DATA</displayType>
+				</Column>
+			</Columns>
+		</ScanType>
+		<SettingValueList varName="settingList">
+			<SettingValue settingCode="annualVolatility" value="true"/>
+		</SettingValueList>
+		<AdvancedFilter varName="filter">
+			<volumeAbove>1</volumeAbove>
+			<hasOptionsIs>true</hasOptionsIs>
+			<esgCombinedScoreAbove>1000</esgCombinedScoreAbove>
+			<avgVolumeBelow>111112222</avgVolumeBelow>
+			<imbalanceAbove>1</imbalanceAbove>
+			<socialSentimentScoreChangeAbove>2</socialSentimentScoreChangeAbove>
+			<avgRatingAbove>11</avgRatingAbove>
+			<esgCommunityScoreAbove>0</esgCommunityScoreAbove>
+		</AdvancedFilter>
+	</ScannerContent>
+	<ArString varName="fullySelectedNodesList">
+		<String>STK.US</String>
+	</ArString>
+	<Columns varName="tickerColumns" type="jcolumn.TickerColumns">
+		<ContractSingleDescColumn colId="99" width="110" alignment="2" fg="-16777216" bg="-1052974" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<AverageVolumeColumn colId="370" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<InsiderPercentOwnedColumn colId="963" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<VolumeColumn colId="22" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ChangeColumn colId="16" width="84" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" showPercent="true" prohibitDynamicColors="false"/>
+		<TradeRateColumn colId="465" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<FeeRateColumn colId="440" width="84" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<VolumeFxColumn colId="450" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ShortTermVolume3MinutesColumn colId="167" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<BidPriceColumn colId="4" width="110" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<VolumeRateColumn colId="467" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ESGCombinedColumn colId="2091" width="60" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" esgCode="TRESGCS"/>
+		<ESGCategoryColumn colId="2115" width="60" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" esgCode="TRESGSOCOS"/>
+		<AuctionImbalanceColumn colId="379" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ShortTermVolume5MinutesColumn colId="168" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<DividendYieldColumn colId="407" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<TweetVolumeScoreChangeColumn colId="44003" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<HVRank52Column colId="6325" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="52 Week HV Rank" columnTitleAbbrev="52HVR"/>
+		<RegulatoryImbalanceColumn colId="966" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IVPercentile26Column colId="6317" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="26 Week IV Percentile" columnTitleAbbrev="26IVP"/>
+		<HaltedColumn colId="2042" width="60" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<UnderlyingOptionImpliedVolatilityColumn colId="59" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IBDividendsColumn colId="478" width="67" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<DividendsPerShareColumn colId="404" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IBNextDividendColumn colId="482" width="67" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ShortTermVolume10MinutesColumn colId="169" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ImbalancePercentColumn colId="458" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<AverageFxVolumeColumn colId="451" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<EpsTrendGrowthColumn colId="401" width="61" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" fieldKey="EPSTRENDGR"/>
+		<NumOfAnalystRatingsColumn colId="957" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IVRank13Column colId="6315" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="13 Week IV Rank" columnTitleAbbrev="13IVR"/>
+		<DividendsColumn colId="57" width="60" alignment="4" bg="-15195301" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" showDividends="false"/>
+		<AvgAnalystRatingColumn colId="956" width="79" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false">
+			<displayType>LABEL</displayType>
+		</AvgAnalystRatingColumn>
+		<LastFxPriceColumn colId="452" width="94" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<TweetVolumeScoreColumn colId="44002" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<FirstTradeDateColumn colId="968" width="60" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IBNextDividendDateColumn colId="483" width="99" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IssuerCountryColumn colId="525" width="60" alignment="2" fg="-16777216" bg="-1052974" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<InstitutionPercentHeldColumn colId="961" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<TradeCountColumn colId="464" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<SlbUtilizationColumn colId="442" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<HVRank26Column colId="6326" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="26 Week HV Rank" columnTitleAbbrev="26HVR"/>
+		<NumOfAnalystPriceTargetsColumn colId="958" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<SocialSentimentScoreChangeColumn colId="44001" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<RegulatoryImbalancePercentColumn colId="967" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<IVRank26Column colId="6314" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="26 Week IV Rank" columnTitleAbbrev="26IVR"/>
+		<ShortableSharesColumn colId="439" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ShortableColumn colId="381" width="60" alignment="2" fg="-16777216" bg="-1052974" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<ChangeSinceOpenColumn colId="55" width="80" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" showPercent="false"/>
+		<GapColumn colId="390" width="80" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" showPercent="false" prohibitDynamicColors="false"/>
+		<HVPercentile13Column colId="6331" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="13 Week HV Percentile" columnTitleAbbrev="13HVP"/>
+		<IVPercentile13Column colId="6318" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="13 Week IV Percentile" columnTitleAbbrev="13IVP"/>
+		<HVPercentile26Column colId="6330" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="26 Week HV Percentile" columnTitleAbbrev="26HVP"/>
+		<InstitutionSharesHeldColumn colId="962" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<OptionVolatilityToHistoryRatioColumn colId="462" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<InsiderSharesOwnedColumn colId="964" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<SocialSentimentScoreColumn colId="44000" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+		<IVRank52Column colId="6313" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="52 Week IV Rank" columnTitleAbbrev="52IVR"/>
+		<ShortSaleRestrictionColumn colId="2043" width="60" alignment="2" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false"/>
+		<HVPercentile52Column colId="6329" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="52 Week HV Percentile" columnTitleAbbrev="52HVP"/>
+		<HVRank13Column colId="6327" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="13 Week HV Rank" columnTitleAbbrev="13HVR"/>
+		<IVPercentile52Column colId="6316" width="60" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" columnTitle="52 Week IV Percentile" columnTitleAbbrev="52IVP"/>
+		<AskPriceColumn colId="5" width="110" alignment="4" uniqueId="0" maxSymbolWidth="0" overrideBg="false" overrideFg="false" prohibitDynamicColors="false"/>
+	</Columns>
+</ScannerTemplate>

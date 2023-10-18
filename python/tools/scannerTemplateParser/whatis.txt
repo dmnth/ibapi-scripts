@@ -1,0 +1,14 @@
+This script will parse an advanced scanner template
+exported from TWS and spit out a scanner object that 
+can be used with ibapi library.
+
+The ElementTree XML library will be used to parse the
+xml template.
+
+Script should check for included properties within 
+certain tags and if they are present add obtained 
+values to scanner subscription object of ibapi.
+
+The end of execution should result in usable 
+scanner object.
+
