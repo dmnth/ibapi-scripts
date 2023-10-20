@@ -1,8 +1,13 @@
 #! /usr/bin/env python3
 
+import argparse
 import xml.etree.ElementTree as ET
 from ibapi.scanner import ScannerSubscription 
 from ibapi.tag_value import TagValue
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--xml', type=str, help='scanner xml template')
+args = parser.parse_args()
 
 
 #ScannerContent
@@ -35,7 +40,10 @@ def createScanner(xml):
     return scanner, tagValues 
 
 if __name__ == "__main__":
-
-    s, t = createScanner('sampleScan.xml')
-    print(s)
-    print(t)
+    
+    if args.xml:
+        s, t = createScanner(args.xml)
+        print(s)
+        print(t)
+    else:
+        print("Please specify a template")
