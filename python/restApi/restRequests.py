@@ -25,9 +25,6 @@ headers = {
         "Content-type": "application/json"
         }
 
-# /iserver/accounts should be queried
-# A
-
 def stocksBySymbol(symbol):
     endpoint = base_url + f"/trsrv/stocks"
     data = {
@@ -93,11 +90,29 @@ def getAccounts():
             headers=headers)
     jsonData = json.loads(resp.text)
     accounts = jsonData['accounts']
+    if 'error' in jsonData.keys():
+        print("Accounts error: ", jsonData['error'])
+        return
     #
     if len(accounts) > 0:
         return accounts
     else:
         print("Go open an account, will ya.")
+
+def calculateCommission():
+
+    jsonData = accountTrades()
+    commission = 0
+    for trade in jsonData:
+        commission += int(float(trade['commission']))
+    print("Commission: ", commission)
+
+def getPnl(writeFile):
+    resp = requests.get(base_url + "/iserver/account/pnl/partitioned", verify=False)
+    jsonData = json.loads(resp.text)
+    print(jsonData)
+    with open(writeFile, 'w') as outfile:
+        json.dump(jsonData, outfile, indent=2)
 
 def callPortfolioAccounts():
     resp = requests.get(base_url + "/portfolio/accounts", verify=False)
@@ -105,20 +120,25 @@ def callPortfolioAccounts():
 
 def checkAuthStatus():
     resp = requests.get(base_url + "/iserver/auth/status", verify=False)
-    if resp.status_code != 200:
-        print(resp.status_code, "--> Something wen wrong")
+    if resp.status_code == 200:
+        jsonData = json.loads(resp.text)
+        if jsonData['authenticated'] == True:
+            print("---> Succesfully authenticated")
+        if jsonData['competing'] == False:
+            print("---> No competing sessions")
+        return jsonData
+    else:
+        print(resp.status_code, "--> Something went wrong: ")
         if resp.status_code == 401:
             raise Exception("Unauthorized, please login via web interface")
-    else:
-        jsonData = json.loads(resp.text)
-    return jsonData
 
 def accountTrades():
     resp = requests.get(base_url + "/iserver/account/trades", verify=False,
             headers=headers)
     jsonData = json.loads(resp.text)
-    print(resp.headers)
-    print(resp.content.decode())
+    with open('trades.json', 'w') as outfile:
+        json.dump(jsonData, outfile, indent=2)
+    return jsonData 
 
 def checkTypes(jsonData):
     for element in jsonData:
@@ -140,11 +160,10 @@ def placeOrder(accId: str, orderDict: dict):
     jsonData = json.loads(resp.text)
     for el in jsonData:
         if 'error' in el:
-            print(jsonData['error'])
+            print(f"---> Error while placing order: {jsonData['error']}")
         if type(el) == dict and "id" in el.keys():
             jsonData = orderReply(el['id'])
-
-    return jsonData 
+    return jsonData[0] 
 
 
 def getContractRules(conID):
@@ -230,15 +249,12 @@ def orderReply(replyID):
     endpoint = base_url + f"/iserver/reply/{replyID}"
     data = {'confirmed': True}
     response = requests.post(endpoint, verify=False, json=data, headers=headers)
-    print(f"REPLY to {replyID}: ", response.text)
+    print(f"---> Confirmed {replyID}")
     jsonData = json.loads(response.text)
     for e in jsonData:
-        if type(e) is dict:
-            if 'id' in e.keys():
-                orderReply(e['id'])
-            else:
-                print("JSON: ", jsonData, e)
-                return jsonData
+        if 'id' in e.keys():
+            orderReply(e['id'])
+    return jsonData
 
 def getOrderStatus(orderId):
     endpoint = base_url + f"/iserver/account/order/status/{orderId}"
@@ -293,7 +309,7 @@ def getPortfolioPositions(accId):
 
 def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, price=None):
     contract = searchBySymbol(symbol, "STK")
-    print(contract)
+#    contract = searchBySymbol(symbol, "FUT")
     accId = getAccounts()[0]
     if orderType == "LMT":
         orderPayload = createLimitOrderPayload(
@@ -307,6 +323,7 @@ def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, p
                 quantity=quantity,
                 tif=tif
                 )
+
     if orderType == "MKT":
         orderPayload = createMarketOrderPayload(
                 accId = accId,
@@ -319,11 +336,14 @@ def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, p
                 tif=tif
                 )
     message = placeOrder(accId, orderPayload)
-    if "id" in message.keys():
+    if type(message) is dict and "id" in message.keys():
         replyId = message['id']
+        print(f"---> Confirmation is required for replyId {replyId}")
         # orderReply function implements recursive call so
         # all queries have relevant reply.
         orderData = orderReply(replyId)
+    else:
+        print(message)
 
 
 
@@ -358,11 +378,23 @@ def getLiveOrders():
     endpoint = base_url + "/iserver/account/orders"
     response = requests.get(endpoint, verify=False, headers=headers)
     jsonData = json.loads(response.text)
+    if 'error' in jsonData.keys():
+        print(jsonData['error'])
+        return
     orderIds = []
     for order in jsonData['orders']:
         orderIds.append(order['orderId'])
 
     return orderIds
+
+def retrieveOrderStatuses():
+
+    orders = getLiveOrders()
+    for orderId in orders:
+        status = checkOrderStatus(orderId)
+        print(status)
+        with open('orderStatuses.json', 'a') as outfile:
+            json.dump(status, outfile, indent=2)
 
 def searchBySymbol(symbol: str, sectype: str):
     data = {
@@ -374,30 +406,37 @@ def searchBySymbol(symbol: str, sectype: str):
     if resp.status_code == 200:
         jsonData = json.loads(resp.text)
         contract = jsonData[0]
+        print(f"---> Received contract details for {symbol}")
         return contract 
     else:
         raise RuntimeError(f"Nothing found for symbol {symbol}")
 
+def checkOrderStatus(orderId):
+    endpoint = f'/iserver/account/order/status/{orderId}'
+    resp = requests.get(base_url + endpoint, verify=False)
+    resp = json.loads(resp.text)
+    return resp
+
+
 def cancelOrder(accountID, orderID):
     endpoint = f'/iserver/account/{accountID}/order/{orderID}'
-    print(orderID)
     if type(orderID) == list:
         orderID = ','.join(str(i) for i in orderID)
         orderID = f'[{orderID}]'
-        print("ORDER LIST TO CANCEL: ", orderID)
     data = {"accountId": accountID, "orderId": orderID}
     resp = requests.delete(base_url + endpoint, params=data, verify=False, headers=headers)
-    print("Cancel order response: ", resp.text)
+    jsonData = json.loads(resp.text)
 
 def cancelAllOrders():
     # to cancel all orders send -1 as ID value
     orderIds = getLiveOrders()
     accId = getAccounts()[0]
-    cancelOrder(accId, orderIds)
+#    cancelOrder(accId, orderIds)
 
-#    while len(orderIds) != 0:
-#        toCancelId = orderIds.pop(0)
-#        cancelOrder(accId, toCancelId)
+    print("Cancelling orders")
+    while len(orderIds) != 0:
+        toCancelId = orderIds.pop(0)
+        cancelOrder(accId, toCancelId)
 
 def betaHistoricalDataQuery(conid, period, bar, outsideRTH, barType):
 
@@ -467,7 +506,7 @@ def scannerRun(instr: str, tp: str, location: str, fltr: list):
 
 def main():
     checkAuthStatus()
-    accountId = getAccounts()[0]
+#    accountId = getAccounts()[0]
     fltrList = [
             {
                 "code": "volumeAbove",
@@ -486,7 +525,21 @@ def main():
                 "value": 50000000000 
                 }
             ]
-    scannerRun("STK", "TOP_PERC_GAIN", "STK.US.MAJOR", fltrList)
+#    scannerRun("STK", "TOP_PERC_GAIN", "STK.US.MAJOR", fltrList)
+
+#    orders = getLiveOrders()
+#    print(orders)
+    cancelAllOrders()
+    getPnl('preOrdePlacement.json')
+    # Calculate commission here
+    calculateCommission()
+    placeSingleOrder("BMW", "SMART", "BUY", "MKT", 'DAY', False, 1)
+    placeSingleOrder("BMW", "SMART", "SELL", "LMT", 'DAY', False, 1, price=80)
+    time.sleep(5)
+    # Calculate commission here
+    calculateCommission()
+    getPnl('afterOrderPlacement.json')
+#    retrieveOrderStatuses()
 
 if __name__ == "__main__":
     if args.address == None:
@@ -495,3 +548,4 @@ if __name__ == "__main__":
     else:
         print(args)
         main()
+        
