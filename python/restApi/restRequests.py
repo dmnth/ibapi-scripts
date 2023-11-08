@@ -8,6 +8,9 @@ import urllib
 from time import sleep
 from orderPayloads import Samples 
 from betaPayloads import *
+import random
+import hashlib
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-a', '--address', help = "provide server ip address")
@@ -103,16 +106,20 @@ def calculateCommission():
 
     jsonData = accountTrades()
     commission = 0
+    price = 0
     for trade in jsonData:
         commission += int(float(trade['commission']))
-    print("Commission: ", commission)
+        price += int(float(trade['price']))
+    print(f"Price/Commission: {price}/{commission}")
 
-def getPnl(writeFile):
+def getPnl(accountId, writeFile=None):
     resp = requests.get(base_url + "/iserver/account/pnl/partitioned", verify=False)
     jsonData = json.loads(resp.text)
-    print(jsonData)
-    with open(writeFile, 'w') as outfile:
-        json.dump(jsonData, outfile, indent=2)
+    if writeFile is not None:
+        with open(writeFile, 'w') as outfile:
+            json.dump(jsonData, outfile, indent=2)
+
+    return jsonData['upnl'][f"{accountId}.Core"]['dpl']
 
 def callPortfolioAccounts():
     resp = requests.get(base_url + "/portfolio/accounts", verify=False)
@@ -140,6 +147,27 @@ def accountTrades():
         json.dump(jsonData, outfile, indent=2)
     return jsonData 
 
+def getCommissionsAndPositinos():
+    trades = accountTrades()
+    entryOrders = {"price": 0, "commission": 0}
+    exitOrders = {"price": 0, "commission": 0}
+    for trade in trades:
+        try:
+            if '20231108' in trade['trade_time']:
+
+                if trade['side'] == "B":
+                    entryOrders['price'] += float(trade['price'])
+                    entryOrders['commission'] += float(trade['commission'])
+
+                if trade['side'] == "S":
+                    exitOrders['price'] += float(trade['price'])
+                    exitOrders['commission'] += float(trade['commission'])
+
+        except KeyError:
+            continue
+    
+    return entryOrders, exitOrders
+
 def checkTypes(jsonData):
     for element in jsonData:
         for k,v in element.items():
@@ -161,6 +189,8 @@ def placeOrder(accId: str, orderDict: dict):
     for el in jsonData:
         if 'error' in el:
             print(f"---> Error while placing order: {jsonData['error']}")
+            sys.exit()
+             
         if type(el) == dict and "id" in el.keys():
             jsonData = orderReply(el['id'])
     return jsonData[0] 
@@ -194,7 +224,7 @@ def getSecDefPerConId(conids: list):
     return jsonData
 
 def createLimitOrderPayload(accId: str, conId: int, exchange: str,
-        orth, price: int, action, symbol, quantity, tif):
+        orth, price: int, action, symbol, quantity, tif, cOID):
     data = { 
             "acctId": accId,
             "conid": conId,
@@ -206,13 +236,14 @@ def createLimitOrderPayload(accId: str, conId: int, exchange: str,
             "side": action,
             "ticker": symbol,
             "quantity": quantity,
-            "tif": tif
+            "tif": tif,
+            "cOID": cOID 
             }
 
     return data
 
 def createMarketOrderPayload(accId: str, conId: int, exchange: str,
-        orth, action, symbol, quantity, tif):
+        orth, action, symbol, quantity, tif, cOID):
     data = { 
             "acctId": accId,
             "conid": conId,
@@ -223,7 +254,8 @@ def createMarketOrderPayload(accId: str, conId: int, exchange: str,
             "side": action,
             "ticker": symbol,
             "quantity": quantity,
-            "tif": tif
+            "tif": tif,
+            "cOID": cOID 
             }
 
     return data
@@ -246,15 +278,18 @@ def createMutliplePayloads(accId, conDefList):
     return payloads
 
 def orderReply(replyID):
+    print("Reply id: ", replyID)
     endpoint = base_url + f"/iserver/reply/{replyID}"
     data = {'confirmed': True}
     response = requests.post(endpoint, verify=False, json=data, headers=headers)
-    print(f"---> Confirmed {replyID}")
-    jsonData = json.loads(response.text)
-    for e in jsonData:
-        if 'id' in e.keys():
-            orderReply(e['id'])
-    return jsonData
+    if len(response.text) != 0:
+        jsonData = json.loads(response.text)
+        for e in jsonData:
+            if 'id' in e.keys():
+                orderReply(e['id'])
+        return jsonData
+    else:
+        print("Nothing left to confirm")
 
 def getOrderStatus(orderId):
     endpoint = base_url + f"/iserver/account/order/status/{orderId}"
@@ -306,12 +341,29 @@ def getPortfolioPositions(accId):
     else:
         raise RuntimeError("")
 
+def genRef(q, s):
+    rand = random.randint(0, 999)
+    string = str(rand) + '/' + str(q) + '/' + s
+    result = hashlib.md5(string.encode()).hexdigest()
+    return result 
 
-def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, price=None):
+def getOrderByCOID(cOID):
+    trades = accountTrades()
+    for trade in trades:
+        try:
+            if trade['order_ref'] == cOID:
+                return trade
+        except KeyError:
+            continue
+
+
+def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, 
+        price=None, orderRef=None):
     contract = searchBySymbol(symbol, "STK")
 #    contract = searchBySymbol(symbol, "FUT")
     accId = getAccounts()[0]
     if orderType == "LMT":
+        ref = genRef(quantity, symbol) 
         orderPayload = createLimitOrderPayload(
                 accId = accId,
                 conId=int(contract['conid']),
@@ -321,10 +373,13 @@ def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, p
                 action=action,
                 symbol=contract['symbol'],
                 quantity=quantity,
-                tif=tif
+                tif=tif,
+                cOID=ref if orderRef == None else orderRef
                 )
+        print("orderRef: ", ref)
 
     if orderType == "MKT":
+        ref = genRef(quantity, symbol)
         orderPayload = createMarketOrderPayload(
                 accId = accId,
                 conId=int(contract['conid']),
@@ -333,17 +388,21 @@ def placeSingleOrder(symbol, exchange, action, orderType, tif, orth, quantity, p
                 action=action,
                 symbol=contract['symbol'],
                 quantity=quantity,
-                tif=tif
+                tif=tif,
+                cOID=ref if orderRef == None else orderRef
                 )
+        print("orderRef: ", ref)
     message = placeOrder(accId, orderPayload)
     if type(message) is dict and "id" in message.keys():
         replyId = message['id']
         print(f"---> Confirmation is required for replyId {replyId}")
         # orderReply function implements recursive call so
         # all queries have relevant reply.
-        orderData = orderReply(replyId)
+        orderReply(replyId)
     else:
         print(message)
+
+    return ref
 
 
 
@@ -504,6 +563,85 @@ def scannerRun(instr: str, tp: str, location: str, fltr: list):
     print(response.text)
 
 
+def testPnl():
+
+    # + 1. Start with no open positions
+    # + 2. Open and close two or more positions
+    # + 3. Get endDay pnl and startDay pnl
+    # 4. Get realizedPnl
+    # + 5. Get commissions
+
+    accountId =  getAccounts()[0]
+    # + 1. Start with no open positions
+    cancelAllOrders()
+    # Get start of the day pnl
+    startPnl = getPnl(accountId, 'preOrdePlacement.json')
+    print(startPnl)
+    calculateCommission()
+    # + 2. Open and close two or more positions
+    ref1 = placeSingleOrder("BMW", "SMART", "BUY", "MKT", 'DAY', False, 1, 
+            orderRef="BMW_BUY")
+
+    ref2 = placeSingleOrder("BMW", "SMART", "SELL", "LMT", 'DAY', False, 1, 
+            price=80, orderRef="BMW_SELL")
+    # Get commisions
+    commission1 = getOrderByCOID(ref1)['commission']
+    executionPrice1 = getOrderByCOID(ref1)['price']
+    commission2 = getOrderByCOID(ref2)['commission']
+    executionPrice2 = getOrderByCOID(ref2)['price']
+    print(f"Commission/Price BUY: {commission1}/{executionPrice1} ")
+    print(f"Commission/Price SELL:{commission2}/{executionPrice2} ") 
+    realizedPnl = (int(float(executionPrice1)) + int(float(commission1))) - (int(float(executionPrice2)) + int(float(commission2)))
+    print(realizedPnl)
+    calculateCommission()
+    # get end of the day pnl
+    endPnl = getPnl(accountId, 'afterOrderPlacement.json')
+    print(endPnl)
+
+def overallRealizedPnl():
+    entryOrders, exitOrders = getCommissionsAndPositinos()
+    print(entryOrders, exitOrders)
+    result = (entryOrders['price'] + entryOrders['commission'] - (exitOrders['price'] + exitOrders['commission']))
+    result = (exitOrders['price'] - entryOrders['price']) - (entryOrders['commission'] + exitOrders['commission']) 
+    print(result)            
+
+def realizedPnlPerTrade(buyRef, selRef):
+
+    # to be able to calculate PNL properly 
+    # Entry and close order's should carrie noteable identifiers.
+
+    # Or sum up all BUY order prices and SELL order prices
+    # Sum up all commissions 
+
+    buyOrder = getOrderByCOID(buyRef)
+    sellOrder = getOrderByCOID(selRef)
+
+    pnl = float(sellOrder['price']) - float(buyOrder['price'])
+    commission = float(sellOrder['commission']) + float(buyOrder['commission'])
+
+    return pnl
+
+
+def testUserCase():
+
+    # Get pnl
+    # Place BUY and SELL order on same contract 
+    # Calculate realizedPNL of two orders
+    accountId = getAccounts()[0]
+    startPnl = getPnl(accountId)
+    placeSingleOrder("BMW", "SMART", "BUY", "MKT", 'DAY', False, 1, 
+            orderRef="TEST_BMW_BUY")
+
+    placeSingleOrder("BMW", "SMART", "SELL", "LMT", 'DAY', False, 1, 
+            price=60, orderRef="TEST_BMW_SELL")
+    endPnl = getPnl(accountId)
+
+    pnl  = realizedPnlPerTrade("TEST_BMW_BUY", "TEST_BMW_SELL")
+    pnlDiff = endPnl - startPnl 
+
+    print("Pnl of the order: ", pnl)
+    print("dpnl difference: ", pnlDiff)
+
 def main():
     checkAuthStatus()
 #    accountId = getAccounts()[0]
@@ -525,20 +663,25 @@ def main():
                 "value": 50000000000 
                 }
             ]
+    testUserCase()
+#    accountId = getAccounts()[0]
+#    overallRealizedPnl()
+#    endPnl = getPnl(accountId, 'afterOrderPlacement.json')
+    # Ending daily Pnl - starting Daily pnl
+
+#    testPnl()
+#    buy, sell = realizedPnlPerTrade("BMW_BUY", "BMW_SELL")
 #    scannerRun("STK", "TOP_PERC_GAIN", "STK.US.MAJOR", fltrList)
 
 #    orders = getLiveOrders()
 #    print(orders)
-    cancelAllOrders()
-    getPnl('preOrdePlacement.json')
-    # Calculate commission here
-    calculateCommission()
-    placeSingleOrder("BMW", "SMART", "BUY", "MKT", 'DAY', False, 1)
-    placeSingleOrder("BMW", "SMART", "SELL", "LMT", 'DAY', False, 1, price=80)
-    time.sleep(5)
-    # Calculate commission here
-    calculateCommission()
-    getPnl('afterOrderPlacement.json')
+# The formula endPnl - startPnl == realizedPnl + commissions/fees
+
+# Realized PNL shows your profit on closed positions
+# realizedPnl = (entryExecutionCost) - (exitExecutionCost)  
+# entryExecutionCost = executionPrice + commissions
+# exitExecutionCost = executionPrice + commissions
+
 #    retrieveOrderStatuses()
 
 if __name__ == "__main__":
