@@ -1,0 +1,7 @@
+#########################################################################
+
+
+1. TWS logs events in time zone that is set as local upon login
+2. Determining the recconnection events and viewing the time 
+   could be useful
+3. Show all the errors, warning and disconnects, track em by id

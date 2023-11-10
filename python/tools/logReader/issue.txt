@@ -1,0 +1,16 @@
+#######################################################################
+
+
+    Received a [WinError 10054]
+
+    Disconnects between 11:45am to 2pm EST.
+
+    Check for multiple sessions conflicts.
+
+    Issue is only present when logged in with 
+    master account during live session
+
+    TWS uses local time zone configured upon login
+
+    log start: 2023-10-31 16:21:12 - 2023-10-31 23:59:58
+    log end:   2023-11-01 00:00:08 - 2023-11-01 07:40:09 (DISCONNECT_ON_EXIT_SESSION)
