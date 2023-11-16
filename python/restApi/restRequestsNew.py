@@ -224,6 +224,25 @@ def getSecDefPerConId(conids: list):
     jsonData = json.loads(respose.text)['secdef']
     return jsonData
 
+def createComboLeggedPayload(accId):
+    # buy MSFT sell AAPL
+    data = { 
+            "acctId": accId,
+            "conidex":"634662618;;;661395167/1,619333053/0" 
+            "orderType": "LMT",
+            "listingExchange": "",
+            "outsideRTH": False,
+            "price": 100,
+            "side": "BUY",
+            "ticker": "",
+            "quantity": 1,
+            "tif": "DAY",
+            "cOID": "Custom ID",
+            "isClose": False
+            }
+
+    return data
+
 def createLimitOrderPayload(accId: str, conId: int, exchange: str,
         orth, price: int, action, symbol, quantity, tif, cOID):
     data = { 
@@ -656,10 +675,7 @@ def testUserCase(stockSymbol: str, identifier: int):
 
 def main():
     checkAuthStatus()
-    symbol = sys.argv[1]
-    oid = sys.argv[2]
-
-    testUserCase(symbol, oid)
+    placeOrder(accId=getAccounts()[0], createComboLeggedPayload())
 #    accountId = getAccounts()[0]
 if __name__ == "__main__":
     main()
