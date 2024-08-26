@@ -39,16 +39,25 @@ class TestApp(EWrapper, EClient):
     def historicalDataEnd(self, reqId, start, end):
         super().historicalDataEnd(reqId, start, end)
         print("Historical data end for: ", self.clientId)
+        self.cancelHistoricalData(reqId)
+
+    def contractDetails(self, reqId, contractDetails):
+        super().contractDetails(reqId, contractDetails)
+        print("contract details: ", reqId, contractDetails)
 
     def start(self):
+        contract = Contract()
+        contract.exchange = "SMART"
+        contract.symbol = "BMW"
+        contract.currency = "EUR"
+        contract.secType = "STK"
+        
+        endDate = '20220127-13:00:00' 
+        endDate = ""
 
-        contract = CustomContracts() 
-
-        contract = contract.eurUsdContract()
-
-        endDate = '' 
+        self.reqContractDetails(self.nextValidOrderId, contract)
         self.reqHistoricalData(self.nextValidOrderId, contract, endDate, 
-                '17 D', '1 hour', 'MIDPOINT', 0, 1, False, [])
+                '1 W', '1 hour', 'BID', 0, 1, True, [])
 
     def stop(self):
         self.done = True
@@ -57,7 +66,7 @@ class TestApp(EWrapper, EClient):
 def main():
     try:
         app = TestApp()
-        app.connect('192.168.43.222', 7496, clientId=1)
+        app.connect('127.0.0.1', 7496, clientId=1)
         print(f'{app.serverVersion()} --- {app.twsConnectionTime().decode()}')
         print(f'ibapi version: ', ibapi.__version__)
 #        Timer(15, app.stop).start()
